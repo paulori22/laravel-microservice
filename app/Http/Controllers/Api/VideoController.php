@@ -30,8 +30,7 @@ class VideoController extends BasicCrudController
         $obj = \DB::transaction(function () use ($request, $validatedData) {
             /** @var Video $obj */
             $obj = $this->model()::create($validatedData);
-            $obj->categories()->sync($request->get('categories_id'));
-            $obj->genres()->sync($request->get('genres_id'));
+            $this->handleRelations($obj, $request);
             return $obj;
         });
         $obj->refresh();
@@ -42,10 +41,18 @@ class VideoController extends BasicCrudController
     {
         $obj = $this->findOrFail($id);
         $validatedData = $this->validate($request, $this->rulesUpdate());
-        $obj->update($validatedData);
-        $obj->categories()->sync($request->get('categories_id'));
-        $obj->genres()->sync($request->get('genres_id'));
+        $obj = \DB::transaction(function () use ($request, $validatedData, $obj) {
+            $obj->update($validatedData);
+            $this->handleRelations($obj, $request);
+            return $obj;
+        });
         return $obj;
+    }
+
+    protected function handleRelations(Video $video, Request $request)
+    {
+        $video->categories()->sync($request->get('categories_id'));
+        $video->genres()->sync($request->get('genres_id'));
     }
 
     protected function model()
