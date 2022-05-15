@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\TestResponse;
@@ -60,36 +61,60 @@ class GenreControllerTest extends TestCase
         $this->assertInvalidationInUpdateAction($data, 'boolean');
     }
 
-    public function testStore()
+    public function testInvalidationCategoriesIdField()
     {
+        $data = [
+            'categories_id' => 'a'
+        ];
+        $this->assertInvalidationInStoreAction($data, 'array');
+        $this->assertInvalidationInUpdateAction($data, 'array');
 
         $data = [
-            'name' => 'test'
+            'categories_id' => [100]
+        ];
+        $this->assertInvalidationInStoreAction($data, 'exists');
+        $this->assertInvalidationInUpdateAction($data, 'exists');
+    }
+
+    public function testStore()
+    {
+        $category = factory(Category::class)->create();
+
+        $data = [
+            'name' => 'test',
         ];
 
-        $response = $this->assertStore($data, $data + ['is_active' => true, 'deleted_at' => null]);
+        $response = $this->assertStore($data + [
+            'categories_id' => [$category->getKey()]
+        ], $data + ['is_active' => true, 'deleted_at' => null]);
         $response->assertJsonStructure([
             'created_at', 'updated_at'
         ]);
+
         $data = [
             'name' => 'test',
-            'is_active' => false
+            'is_active' => false,
         ];
-        $this->assertStore($data, $data + ['is_active' => false]);
+        $this->assertStore($data + [
+            'categories_id' => [$category->getKey()]
+        ], $data + ['is_active' => false]);
     }
 
     public function testUpdate()
     {
+        $category = factory(Category::class)->create();
         $this->genre = factory(Genre::class)->create([
-            'is_active' => false
+            'is_active' => false,
         ]);
 
         $data =        [
             'name' => 'test',
-            'is_active' => true
+            'is_active' => true,
         ];
 
-        $response = $this->assertUpdate($data, $data + ['deleted_at' => null]);
+        $response = $this->assertUpdate($data + [
+            'categories_id' => [$category->getKey()]
+        ], $data + ['deleted_at' => null]);
         $response->assertJsonStructure([
             'created_at', 'updated_at'
         ]);
