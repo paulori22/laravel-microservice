@@ -8,7 +8,7 @@ trait UploadFiles
 {
 
     protected abstract function uploadDir();
-    public static $fileFields = ['file1', 'file2'];
+    //public static $fileFields = ['file1', 'file2'];
 
     /**
      * @param UploadedFile $files
