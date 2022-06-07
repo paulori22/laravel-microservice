@@ -1,33 +1,15 @@
 <?php
 
-namespace Tests\Feature\Models;
+namespace Tests\Feature\Models\Video;
 
 use App\Models\Category;
 use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Database\QueryException;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Ramsey\Uuid\Uuid;
-use Tests\TestCase;
 
-class VideoTest extends TestCase
+class VideoCrudTest extends BaseVideoTestCase
 {
-    use DatabaseMigrations;
-
-    private $data;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->data = [
-            'title' => 'title',
-            'description' => 'description',
-            'year_release' => 2010,
-            'rating' => Video::RATING_LIST[0],
-            'duration' => 90,
-        ];
-    }
-
     public function testList()
     {
         factory(Video::class, 1)->create();
@@ -43,6 +25,7 @@ class VideoTest extends TestCase
             'id',
             'title',
             'description',
+            'video_file',
             'year_release',
             'opened',
             'rating',
