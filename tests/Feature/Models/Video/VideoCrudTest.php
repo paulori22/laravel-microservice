@@ -10,6 +10,16 @@ use Ramsey\Uuid\Uuid;
 
 class VideoCrudTest extends BaseVideoTestCase
 {
+    private $fileFieldsData = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        foreach (Video::$fileFields as $field) {
+            $this->fileFieldsData[$field] = "$field.test";
+        }
+    }
+
     public function testList()
     {
         factory(Video::class, 1)->create();
@@ -26,6 +36,7 @@ class VideoCrudTest extends BaseVideoTestCase
             'title',
             'description',
             'video_file',
+            'thumb_file',
             'year_release',
             'opened',
             'rating',
@@ -40,12 +51,12 @@ class VideoCrudTest extends BaseVideoTestCase
 
     public function testCreateWithBasicFields()
     {
-        $video = Video::create($this->data);
+        $video = Video::create($this->data + $this->fileFieldsData);
         $video->refresh();
 
         $this->assertTrue(Uuid::isValid($video->getKey()));
         $this->assertFalse($video->opened);
-        $this->assertDatabaseHas('videos', $this->data + ['opened' => false]);
+        $this->assertDatabaseHas('videos', $this->data + $this->fileFieldsData + ['opened' => false]);
 
         $video = Video::create($this->data + ['opened' => true]);
         $video->refresh();
@@ -78,9 +89,9 @@ class VideoCrudTest extends BaseVideoTestCase
         $video = factory(Video::class)->create([
             'opened' => true
         ]);
-        $video->update($this->data + ['opened' => false]);
+        $video->update($this->data + ['opened' => false] + $this->fileFieldsData);
         $this->assertFalse($video->opened);
-        $this->assertDatabaseHas('videos', $this->data + ['opened' => false]);
+        $this->assertDatabaseHas('videos', $this->data +  $this->fileFieldsData + ['opened' => false]);
 
         $video = factory(Video::class)->create([
             'opened' => false
