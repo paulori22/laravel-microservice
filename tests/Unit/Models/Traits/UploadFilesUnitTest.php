@@ -3,10 +3,10 @@
 namespace Tests\Unit\Models\Traits;
 
 use Illuminate\Http\UploadedFile;
-use PHPUnit\Framework\TestCase;
 use Tests\Stubs\Models\UploadFileStub;
+use Tests\TestCase as TestsTestCase;
 
-class UploadFilesUnitTest extends TestCase
+class UploadFilesUnitTest extends TestsTestCase
 {
     /**
      * @var UploadFileStub
