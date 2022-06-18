@@ -4,9 +4,9 @@ namespace Tests\Unit\Models\Traits;
 
 use Illuminate\Http\UploadedFile;
 use Tests\Stubs\Models\UploadFileStub;
-use Tests\TestCase as TestsTestCase;
+use Tests\TestCase;
 
-class UploadFilesUnitTest extends TestsTestCase
+class UploadFilesUnitTest extends TestCase
 {
     /**
      * @var UploadFileStub
