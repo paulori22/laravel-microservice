@@ -5,11 +5,13 @@ namespace Tests\Feature\Http\Controllers\Api\VideoController;
 use App\Models\Category;
 use App\Models\Genre;
 use App\Models\Video;
+use Illuminate\Foundation\Testing\TestResponse;
 use Illuminate\Http\UploadedFile;
-
+use Illuminate\Support\Arr;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestUploads;
 use Tests\Traits\TestValidations;
+use Tests\Unit\Models\VideoUnitTest;
 
 class VideoControllerUploadsTest extends BaseVideoControllerTestCase
 {
@@ -21,28 +23,28 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
             [
                 'field' => 'video_file',
                 'type' => 'mp4',
-                'maxSize' => 52428800,
+                'maxSize' => Video::VIDEO_FILE_MAX_SIZE,
                 'rule' => 'mimetypes',
                 'ruleParams' => ['values' => 'video/mp4']
             ],
             [
                 'field' => 'thumb_file',
                 'type' => 'jpg',
-                'maxSize' => 5120,
+                'maxSize' => Video::THUMB_FILE_MAX_SIZE,
                 'rule' => 'mimetypes',
                 'ruleParams' => ['values' => 'image/jpeg']
             ],
             [
                 'field' => 'trailer_file',
                 'type' => 'mp4',
-                'maxSize' => 1048576,
+                'maxSize' => Video::TRAILER_FILE_MAX_SIZE,
                 'rule' => 'mimetypes',
                 'ruleParams' => ['values' => 'video/mp4']
             ],
             [
                 'field' => 'banner_file',
                 'type' => 'jpg',
-                'maxSize' => 10240,
+                'maxSize' => Video::BANNER_FILE_MAX_SIZE,
                 'rule' => 'mimetypes',
                 'ruleParams' => ['values' => 'image/jpeg']
             ],
@@ -63,26 +65,58 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
         \Storage::fake();
         $files = $this->getTestFiles();
 
-        $category = factory(Category::class)->create();
-        $genre = factory(Genre::class)->create();
-        $genre->categories()->sync($category->getKey());
+        $testData = Arr::except($this->sendData, ['categories_id', 'genres_id']);
 
         $data = [
             'send_data' => $this->sendData +
-                [
-                    'categories_id' => [$category->getKey()],
-                    'genres_id' => [$genre->getKey()],
-                ] +
                 $files,
-            'test_data' => $this->sendData
+            'test_data' => $testData
         ];
 
         $response = $this->assertStore($data['send_data'], $data['test_data'] + ['deleted_at' => null]);
-        $videoId = $response['id'];
-        foreach ($files as $file) {
-            $filePath = "$videoId/{$file->hashName()}";
-            \Storage::assertExists($filePath);
-        }
+        $this->assertFileOnPersist($response, $files);
+    }
+
+    public function testUpdateWithFiles()
+    {
+        \Storage::fake();
+        $files = $this->getTestFiles();
+
+        $testData = Arr::except($this->sendData, ['categories_id', 'genres_id']);
+
+        $data = [
+            'send_data' => $this->sendData +
+                $files,
+            'test_data' => $testData
+        ];
+
+        $response = $this->assertUpdate($data['send_data'], $data['test_data'] + ['deleted_at' => null]);
+        $this->assertFileOnPersist($response, $files);
+
+        $newFiles = [
+            'video_file' => UploadedFile::fake()->create('video.mp4', 1024),
+            'thumb_file' => UploadedFile::fake()->image('thumb.jpg', 1024),
+        ];
+
+        $data = [
+            'send_data' => $this->sendData +
+                $newFiles,
+            'test_data' => $testData
+        ];
+
+        $response = $this->assertUpdate($data['send_data'], $data['test_data'] + ['deleted_at' => null]);
+        $this->assertFileOnPersist($response, $newFiles);
+        $id = $response->json('id');
+        $video = Video::find($id);
+        \Storage::assertMissing($video->relativeFilePath($files['thumb_file']->hashName()));
+        \Storage::assertMissing($video->relativeFilePath($files['video_file']->hashName()));
+    }
+
+    protected function assertFileOnPersist(TestResponse $testResponse, $files)
+    {
+        $id = $testResponse->json('id');
+        $video = Video::find($id);
+        $this->assertFilesExistInStorage($video, $files);
     }
 
     protected function getTestFiles()

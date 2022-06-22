@@ -50,4 +50,9 @@ class UploadFilesTest extends TestCase
 
         $this->assertEquals([], $this->obj->oldFiles);
     }
+
+    public function testRelativePath()
+    {
+        $this->assertEquals('1/video.mp4', $this->obj->relativeFilePath('video.mp4'));
+    }
 }
