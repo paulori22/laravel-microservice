@@ -13,6 +13,21 @@ abstract class BaseVideoControllerTestCase extends TestCase
     use DatabaseMigrations;
 
     protected $video;
+    protected $serializedFields = [
+        'id',
+        'title',
+        'description',
+        'year_release',
+        'rating',
+        'duration',
+        'video_file_url',
+        'thumb_file_url',
+        'trailer_file_url',
+        'banner_file_url',
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
     protected $sendData;
 
     protected function setUp(): void

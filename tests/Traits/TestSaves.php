@@ -53,7 +53,7 @@ trait TestSaves
         $response->assertJsonFragment($testResponse + ['id' => $this->getIdFromResponse($response)]);
     }
 
-    private function getIdFromResponse(TestResponse $response)
+    protected function getIdFromResponse(TestResponse $response)
     {
         return $response->json('id') ?? $response->json('data.id');
     }

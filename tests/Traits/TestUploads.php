@@ -2,6 +2,7 @@
 
 namespace Tests\Traits;
 
+use App\Models\Video;
 use Illuminate\Http\UploadedFile;
 
 trait TestUploads
@@ -42,7 +43,7 @@ trait TestUploads
         }
     }
 
-    protected function assertFilesExistInStorage($model, array $files)
+    protected function assertFilesExistInStorage(Video $model, array $files)
     {
         /** @var UploadFiles $model */
         foreach ($files as $file) {
