@@ -72,6 +72,9 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
 
         $response = $this->assertStore($data['send_data'], $data['test_data'] + ['deleted_at' => null]);
         $this->assertFileOnPersist($response, $files);
+        $id = $this->getIdFromResponse($response);
+        $video = Video::find($id);
+        $this->assertIfFileUrlExists($video, $response);
     }
 
     public function testUpdateWithFiles()
@@ -89,6 +92,10 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
 
         $response = $this->assertUpdate($data['send_data'], $data['test_data'] + ['deleted_at' => null]);
         $this->assertFileOnPersist($response, $files);
+
+        $id = $this->getIdFromResponse($response);
+        $video = Video::find($id);
+        $this->assertIfFileUrlExists($video, $response);
 
         $newFiles = [
             'video_file' => UploadedFile::fake()->create('video.mp4', 1024),
