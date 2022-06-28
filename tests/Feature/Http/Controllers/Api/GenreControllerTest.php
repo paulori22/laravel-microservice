@@ -23,7 +23,17 @@ class GenreControllerTest extends TestCase
         'id',
         'name',
         'is_active',
-        'categories',
+        'categories' => [
+            '*' =>  [
+                'id',
+                'name',
+                'description',
+                'is_active',
+                'created_at',
+                'updated_at',
+                'deleted_at'
+            ]
+        ],
         'created_at',
         'updated_at',
         'deleted_at'
