@@ -4,6 +4,7 @@ import {
   Link,
   Typography,
   Breadcrumbs as MuiBreadcrumbs,
+  Box,
 } from "@material-ui/core";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Route } from "react-router";
@@ -75,9 +76,11 @@ export default function Breadcrumbs() {
 
   return (
     <Container>
-      <Route>
-        {({ location }: { location: Location }) => makeBreadcrumb(location)}
-      </Route>
+      <Box paddingBottom={2}>
+        <Route>
+          {({ location }: { location: Location }) => makeBreadcrumb(location)}
+        </Route>
+      </Box>
     </Container>
   );
 }
