@@ -21,7 +21,7 @@ const columnsDefinition: MUIDataTableColumn[] = [
     label: "Categorias",
     options: {
       customBodyRender(categories: Category[]) {
-        return categories.map((c) => c.name).join(",");
+        return categories.map((c) => c.name).join(", ");
       },
     },
   },
