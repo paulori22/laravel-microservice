@@ -3,7 +3,7 @@ import MUIDataTable, { MUIDataTableColumn } from "mui-datatables";
 import React, { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 
-import { httpVideo } from "../../util/http";
+import categoryHttp from "../../util/http/category-http";
 
 const columnsDefinition: MUIDataTableColumn[] = [
   {
@@ -34,13 +34,20 @@ const columnsDefinition: MUIDataTableColumn[] = [
   },
 ];
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 type TableProps = {};
 
 export const Table: React.FC<TableProps> = (props) => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<Category[]>([]);
 
   useEffect(() => {
-    httpVideo.get("categories").then((response) => setData(response.data.data));
+    categoryHttp
+      .list<{ data: Category[] }>()
+      .then((response) => setData(response.data.data));
   }, []);
 
   return (
