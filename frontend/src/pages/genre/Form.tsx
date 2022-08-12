@@ -93,7 +93,6 @@ export const Form = () => {
             variant={"outlined"}
             fullWidth
             onChange={(e) => {
-              console.log(e.target.value);
               setValue("categories_id", e.target.value as any);
             }}
             SelectProps={{
