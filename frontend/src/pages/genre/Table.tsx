@@ -4,6 +4,7 @@ import MUIDataTable, { MUIDataTableColumn } from "mui-datatables";
 import { format, parseISO } from "date-fns";
 
 import { httpVideo } from "../../util/http";
+import { BadgeNo, BadgeYes } from "../../components/Badge";
 
 type Category = {
   id: string;
@@ -30,11 +31,7 @@ const columnsDefinition: MUIDataTableColumn[] = [
     label: "Ativo?",
     options: {
       customBodyRender(value) {
-        return value ? (
-          <Chip label="Sim" color="primary" />
-        ) : (
-          <Chip label="Não" color="secondary" />
-        );
+        return value ? <BadgeYes /> : <BadgeNo />;
       },
     },
   },
