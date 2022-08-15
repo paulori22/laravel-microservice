@@ -8,7 +8,7 @@ import CloseIcon from "@material-ui/icons/Close";
 
 const useStyles = makeStyles((theme) => {
   return {
-    variantSucess: {
+    variantSuccess: {
       backgroundColor: theme.palette.success.main,
     },
     variantError: {
