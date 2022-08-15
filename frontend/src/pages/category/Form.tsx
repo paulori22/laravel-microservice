@@ -31,23 +31,15 @@ const validationSchema = yup.object().shape({
 export const Form = () => {
   const classes = useStyles();
 
-  const {
-    register,
-    handleSubmit,
-    errors,
-    reset,
-    watch,
-    setValue,
-    getValues,
-    control,
-  } = useForm({
-    validationSchema,
-    defaultValues: {
-      name: "",
-      description: "",
-      is_active: true,
-    },
-  });
+  const { register, handleSubmit, errors, reset, watch, setValue, control } =
+    useForm({
+      validationSchema,
+      defaultValues: {
+        name: "",
+        description: "",
+        is_active: true,
+      },
+    });
 
   const snackbar = useSnackbar();
   const history = useHistory();
