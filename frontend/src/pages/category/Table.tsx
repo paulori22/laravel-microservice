@@ -1,6 +1,5 @@
-import { Chip } from "@material-ui/core";
-import MUIDataTable, { MUIDataTableColumn } from "mui-datatables";
 import React, { useEffect, useState } from "react";
+import MUIDataTable, { MUIDataTableColumn } from "mui-datatables";
 import { format, parseISO } from "date-fns";
 
 import categoryHttp from "../../util/http/category-http";

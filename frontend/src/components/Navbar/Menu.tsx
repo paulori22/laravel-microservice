@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  IconButton,
-  makeStyles,
-  Menu as MuiMenu,
-  MenuItem,
-  Theme,
-} from "@material-ui/core";
+import { IconButton, Menu as MuiMenu, MenuItem } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
 import routes, { MyRouteProps } from "../../routes";
 import { Link } from "react-router-dom";
