@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Button,
   ButtonProps,
   Checkbox,
   FormControlLabel,
@@ -15,6 +13,9 @@ import { useParams, useHistory } from "react-router";
 import { useSnackbar } from "notistack";
 
 import categoryHttp from "../../util/http/category-http";
+import { Category } from "../../util/models";
+import DefaultForm from "../../components/DefaultForm";
+import SubmitActions from "../../components/SubmitActions";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -44,7 +45,7 @@ export const Form = () => {
   const snackbar = useSnackbar();
   const history = useHistory();
   const { id } = useParams();
-  const [category, setCategory] = useState<{ id: string } | null>(null);
+  const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(false);
 
   const buttonProps: ButtonProps = {
@@ -58,46 +59,55 @@ export const Form = () => {
     if (!id) {
       return;
     }
-    setLoading(true);
-    categoryHttp
-      .get(id)
-      .then(({ data }) => {
+    (async function getCategory() {
+      setLoading(true);
+      try {
+        const { data } = await categoryHttp.get(id);
         setCategory(data.data);
         reset(data.data);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const onSubmit = (formData, event) => {
-    setLoading(true);
-    const http = !category
-      ? categoryHttp.create(formData)
-      : categoryHttp.update(category.id, formData);
-
-    http
-      .then(({ data }) => {
-        snackbar.enqueueSnackbar("Categoria salva com sucesso", {
-          variant: "success",
-        });
-        setTimeout(() => {
-          event
-            ? id
-              ? history.replace(`/categories/${data.data.id}/edit`)
-              : history.push(`/categories/${data.data.id}/edit`)
-            : history.push("/categories");
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-        snackbar.enqueueSnackbar("Não foi possivel salvar a categoria", {
+      } catch (error) {
+        console.error(error);
+        snackbar.enqueueSnackbar("Não foi possível carregar as informações", {
           variant: "error",
         });
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const onSubmit = async (formData, event) => {
+    setLoading(true);
+    try {
+      const http = !category
+        ? categoryHttp.create(formData)
+        : categoryHttp.update(category.id, formData);
+      const { data } = await http;
+      snackbar.enqueueSnackbar("Categoria salva com sucesso", {
+        variant: "success",
+      });
+      setTimeout(() => {
+        event
+          ? id
+            ? history.replace(`/categories/${data.data.id}/edit`)
+            : history.push(`/categories/${data.data.id}/edit`)
+          : history.push("/categories");
+      });
+    } catch (error) {
+      console.error(error);
+      snackbar.enqueueSnackbar("Não foi possivel salvar a categoria", {
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <DefaultForm
+      onSubmit={handleSubmit(onSubmit)}
+      GridItemProps={{ xs: 12, md: 6 }}
+    >
       <TextField
         inputRef={register}
         name="name"
@@ -139,14 +149,10 @@ export const Form = () => {
         name="is_active"
         control={control}
       />
-      <Box dir="rtl">
-        <Button {...buttonProps} onClick={() => handleSubmit(onSubmit)()}>
-          Salvar
-        </Button>
-        <Button {...buttonProps} type="submit">
-          Salvar e continuar editando
-        </Button>
-      </Box>
-    </form>
+      <SubmitActions
+        disabledButtons={loading}
+        handleSave={() => handleSubmit(onSubmit)()}
+      />
+    </DefaultForm>
   );
 };

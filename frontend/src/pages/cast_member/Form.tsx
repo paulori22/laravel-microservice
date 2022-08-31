@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Button,
-  ButtonProps,
   FormControl,
   FormControlLabel,
   FormHelperText,
   FormLabel,
-  makeStyles,
   Radio,
   RadioGroup,
   TextField,
-  Theme,
 } from "@material-ui/core";
 import { Controller, useForm } from "react-hook-form";
 import castMemberHttp from "../../util/http/cast-member-http";
@@ -19,14 +14,9 @@ import { useSnackbar } from "notistack";
 import { useHistory, useParams } from "react-router-dom";
 
 import * as yup from "../../util/vendor/yup";
-
-const useStyles = makeStyles((theme: Theme) => {
-  return {
-    submit: {
-      margin: theme.spacing(1),
-    },
-  };
-});
+import { CastMember } from "../../util/models";
+import SubmitActions from "../../components/SubmitActions";
+import DefaultForm from "../../components/DefaultForm";
 
 const castMembersType = [
   { label: "Diretor", value: "1" },
@@ -39,8 +29,6 @@ const validationSchema = yup.object().shape({
 });
 
 export const Form = () => {
-  const classes = useStyles();
-
   const { register, handleSubmit, control, setValue, errors, reset, watch } =
     useForm({
       validationSchema,
@@ -53,15 +41,8 @@ export const Form = () => {
   const snackbar = useSnackbar();
   const history = useHistory();
   const { id } = useParams();
-  const [castMember, setCastMember] = useState<{ id: string } | null>(null);
+  const [castMember, setCastMember] = useState<CastMember | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const buttonProps: ButtonProps = {
-    className: classes.submit,
-    color: "secondary",
-    variant: "contained",
-    disabled: loading,
-  };
 
   useEffect(() => {
     if (!id) {
@@ -106,7 +87,10 @@ export const Form = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <DefaultForm
+      onSubmit={handleSubmit(onSubmit)}
+      GridItemProps={{ xs: 12, md: 6 }}
+    >
       <TextField
         inputRef={register}
         name="name"
@@ -151,15 +135,10 @@ export const Form = () => {
         name="type"
         control={control}
       />
-
-      <Box dir="rtl">
-        <Button {...buttonProps} onClick={() => handleSubmit(onSubmit)()}>
-          Salvar
-        </Button>
-        <Button {...buttonProps} type="submit">
-          Salvar e continuar editando
-        </Button>
-      </Box>
-    </form>
+      <SubmitActions
+        disabledButtons={loading}
+        handleSave={() => handleSubmit(onSubmit)()}
+      />
+    </DefaultForm>
   );
 };

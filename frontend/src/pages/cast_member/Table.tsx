@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import MUIDataTable, { MUIDataTableColumn } from "mui-datatables";
 import { format, parseISO } from "date-fns";
 
-import { httpVideo } from "../../util/http";
+import castMemberHttp from "../../util/http/cast-member-http";
+import { CastMember } from "../../util/models";
 
 const castMembersOptions = {
   1: "1 - Diretor",
@@ -37,12 +38,20 @@ const columnsDefinition: MUIDataTableColumn[] = [
 type TableProps = {};
 
 export const Table: React.FC<TableProps> = (props) => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<CastMember[]>([]);
 
   useEffect(() => {
-    httpVideo
-      .get("cast_members")
-      .then((response) => setData(response.data.data));
+    let isSubscribed = true;
+    (async () => {
+      const { data } = await castMemberHttp.list();
+      if (isSubscribed) {
+        setData(data.data);
+      }
+    })();
+
+    return () => {
+      isSubscribed = false;
+    };
   }, []);
 
   return (

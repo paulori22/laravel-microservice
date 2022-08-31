@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import MUIDataTable, { MUIDataTableColumn } from "mui-datatables";
 import { format, parseISO } from "date-fns";
 
-import { httpVideo } from "../../util/http";
 import { BadgeNo, BadgeYes } from "../../components/Badge";
+import genreHttp from "../../util/http/genre-http";
 
 type Category = {
   id: string;
@@ -51,7 +51,17 @@ export const Table: React.FC<TableProps> = (props) => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    httpVideo.get("genres").then((response) => setData(response.data.data));
+    let isSubscribed = true;
+    (async () => {
+      const { data } = await genreHttp.list();
+      if (isSubscribed) {
+        setData(data.data);
+      }
+    })();
+
+    return () => {
+      isSubscribed = false;
+    };
   }, []);
 
   return (

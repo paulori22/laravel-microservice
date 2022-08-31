@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Button,
   ButtonProps,
   Checkbox,
   makeStyles,
@@ -16,6 +14,9 @@ import categoryHttp from "../../util/http/category-http";
 import * as yup from "../../util/vendor/yup";
 import { useSnackbar } from "notistack";
 import { useHistory, useParams } from "react-router";
+import { Category } from "../../util/models";
+import SubmitActions from "../../components/SubmitActions";
+import DefaultForm from "../../components/DefaultForm";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -31,11 +32,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
-type Category = {
-  id: string;
-  name: string;
-};
 
 const validationSchema = yup.object().shape({
   name: yup.string().label("Nome").required().max(255),
@@ -69,19 +65,39 @@ export const Form = () => {
   };
 
   useEffect(() => {
-    if (!id) {
-      return;
-    }
-    setLoading(true);
-    genreHttp
-      .get(id)
-      .then(({ data }) => {
-        setGenre(data.data);
-        const { categories } = data.data;
-        const categories_id = categories.map((category) => category.id);
-        reset({ ...data.data, categories_id });
-      })
-      .finally(() => setLoading(false));
+    let isSubscribed = true;
+    (async () => {
+      setLoading(true);
+      const promisses = [categoryHttp.list()];
+      if (id) {
+        promisses.push(genreHttp.get(id));
+      }
+      try {
+        const [categoriesResponse, genreResponse] = await Promise.all(
+          promisses
+        );
+        if (isSubscribed) {
+          setCategories(categoriesResponse.data.data);
+          if (id) {
+            setGenre(genreResponse.data.data);
+            const { categories } = genreResponse.data.data;
+            const categories_id = categories.map((category) => category.id);
+            reset({ ...genreResponse.data.data, categories_id });
+          }
+        }
+      } catch (error) {
+        console.error(error);
+        snackbar.enqueueSnackbar("Não foi possivel carregar as informações", {
+          variant: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    })();
+
+    return () => {
+      isSubscribed = false;
+    };
   }, []);
 
   const selectedCategories = watch("categories_id", []);
@@ -123,7 +139,10 @@ export const Form = () => {
   }, []);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <DefaultForm
+      onSubmit={handleSubmit(onSubmit)}
+      GridItemProps={{ xs: 12, md: 6 }}
+    >
       <TextField
         inputRef={register}
         name="name"
@@ -173,14 +192,10 @@ export const Form = () => {
       />
       <Checkbox inputRef={register} name="is_active" defaultChecked />
       Ativo
-      <Box dir="rtl">
-        <Button {...buttonProps} onClick={() => handleSubmit(onSubmit)()}>
-          Salvar
-        </Button>
-        <Button {...buttonProps} type="submit">
-          Salvar e continuar editando
-        </Button>
-      </Box>
-    </form>
+      <SubmitActions
+        disabledButtons={loading}
+        handleSave={() => handleSubmit(onSubmit)()}
+      />
+    </DefaultForm>
   );
 };
