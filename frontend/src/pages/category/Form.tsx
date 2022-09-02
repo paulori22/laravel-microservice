@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  ButtonProps,
-  Checkbox,
-  FormControlLabel,
-  makeStyles,
-  TextField,
-  Theme,
-} from "@material-ui/core";
+import { Checkbox, FormControlLabel, TextField } from "@material-ui/core";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from "../../util/vendor/yup";
 import { useParams, useHistory } from "react-router";
@@ -17,21 +10,11 @@ import { Category } from "../../util/models";
 import DefaultForm from "../../components/DefaultForm";
 import SubmitActions from "../../components/SubmitActions";
 
-const useStyles = makeStyles((theme: Theme) => {
-  return {
-    submit: {
-      margin: theme.spacing(1),
-    },
-  };
-});
-
 const validationSchema = yup.object().shape({
   name: yup.string().label("Nome").required().max(255),
 });
 
 export const Form = () => {
-  const classes = useStyles();
-
   const { register, handleSubmit, errors, reset, watch, setValue, control } =
     useForm({
       validationSchema,
@@ -47,13 +30,6 @@ export const Form = () => {
   const { id } = useParams();
   const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const buttonProps: ButtonProps = {
-    className: classes.submit,
-    color: "secondary",
-    variant: "contained",
-    disabled: loading,
-  };
 
   useEffect(() => {
     if (!id) {

@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
-import MUIDataTable, { MUIDataTableColumn } from "mui-datatables";
 import { format, parseISO } from "date-fns";
 
 import { BadgeNo, BadgeYes } from "../../components/Badge";
 import genreHttp from "../../util/http/genre-http";
+import DefaultTable, {
+  makeActionsStyles,
+  TableColumn,
+} from "../../components/Table";
+import { IconButton, MuiThemeProvider } from "@material-ui/core";
+import EditIcon from "@material-ui/icons/Edit";
+import { Link } from "react-router-dom";
 
 type Category = {
   id: string;
@@ -11,7 +17,15 @@ type Category = {
   is_active: string;
 };
 
-const columnsDefinition: MUIDataTableColumn[] = [
+const columnsDefinition: TableColumn[] = [
+  {
+    name: "id",
+    label: "ID",
+    width: "30%",
+    options: {
+      sort: false,
+    },
+  },
   {
     name: "name",
     label: "Nome",
@@ -43,6 +57,25 @@ const columnsDefinition: MUIDataTableColumn[] = [
       },
     },
   },
+  {
+    name: "actions",
+    label: "Ações",
+    width: "13%",
+    options: {
+      sort: false,
+      customBodyRender: (_, tableMeta) => {
+        return (
+          <IconButton
+            color="secondary"
+            component={Link}
+            to={`/genres/${tableMeta.rowData[0]}/edit`}
+          >
+            <EditIcon />
+          </IconButton>
+        );
+      },
+    },
+  },
 ];
 
 type TableProps = {};
@@ -65,11 +98,13 @@ export const Table: React.FC<TableProps> = (props) => {
   }, []);
 
   return (
-    <MUIDataTable
-      title="Listagem de Gêneros"
-      columns={columnsDefinition}
-      data={data}
-    />
+    <MuiThemeProvider theme={makeActionsStyles(columnsDefinition.length - 1)}>
+      <DefaultTable
+        title="Listagem de Gêneros"
+        columns={columnsDefinition}
+        data={data}
+      />
+    </MuiThemeProvider>
   );
 };
 
