@@ -7,8 +7,9 @@ import MUIDataTable, {
 import { cloneDeep, merge, omit } from "lodash";
 import { useTheme } from "@material-ui/styles";
 import { MuiThemeProvider, Theme, useMediaQuery } from "@material-ui/core";
+import DebouncedTableSearch from "./DebouncedTableSearch";
 
-const defaultOptions: MUIDataTableOptions = {
+const makeDefaultOptions = (debouncedSearchTime?): MUIDataTableOptions => ({
   print: false,
   download: false,
   textLabels: {
@@ -44,7 +45,23 @@ const defaultOptions: MUIDataTableOptions = {
       deleteAria: "Excluir registros selecionados",
     },
   },
-};
+  customSearchRender: (
+    searchText: string,
+    handleSearch: any,
+    hideSearch: any,
+    options: any
+  ) => {
+    return (
+      <DebouncedTableSearch
+        searchText={searchText}
+        onSearch={handleSearch}
+        onHide={hideSearch}
+        options={options}
+        debounceTime={debouncedSearchTime}
+      />
+    );
+  },
+});
 
 export interface TableColumn extends MUIDataTableColumn {
   width?: string;
@@ -53,6 +70,7 @@ export interface TableColumn extends MUIDataTableColumn {
 export interface TableProps extends MUIDataTableProps {
   columns: TableColumn[];
   loading?: boolean;
+  debouncedSearchTime?: number;
 }
 
 const Table: React.FC<TableProps> = (props) => {
@@ -93,6 +111,7 @@ const Table: React.FC<TableProps> = (props) => {
   const theme = cloneDeep<Theme>(useTheme());
   const isSmOrSmaller = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const defaultOptions = makeDefaultOptions(props.debouncedSearchTime);
   const newProps = merge(
     {
       options: cloneDeep(defaultOptions),
