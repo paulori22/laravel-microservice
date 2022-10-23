@@ -27,14 +27,19 @@ const defaultSearchStyles = (theme) => ({
   },
 });
 
-class DebouncedTableSearch extends React.Component {
+class DebouncedTableSearch extends React.PureComponent {
   constructor(props) {
     super(props);
+    const { searchText } = this.props;
+    let value = searchText;
+    if (searchText && searchText.value !== undefined) {
+      value = searchText.value;
+    }
     this.state = {
-      text: props.searchText,
+      text: value,
     };
-    this.dispatchOnSearch = debounce(
-      this.dispatchOnSearch.bind(this),
+    this.debouncedOnSearch = debounce(
+      this.debouncedOnSearch.bind(this),
       this.props.debounceTime
     );
   }
@@ -45,11 +50,11 @@ class DebouncedTableSearch extends React.Component {
       {
         text: value,
       },
-      () => this.dispatchOnSearch(value)
+      () => this.debouncedOnSearch(value)
     );
   };
 
-  dispatchOnSearch = (value) => {
+  debouncedOnSearch = (value) => {
     this.props.onSearch(value);
   };
 
@@ -61,6 +66,23 @@ class DebouncedTableSearch extends React.Component {
     document.removeEventListener("keydown", this.onKeyDown, false);
   }
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    const { searchText } = this.props;
+    if (
+      searchText &&
+      searchText.value !== undefined &&
+      prevProps.seachText !== this.props.searchText
+    ) {
+      const value = searchText.value;
+      this.setState(
+        {
+          text: value,
+        },
+        () => this.props.onSearch(value)
+      );
+    }
+  }
+
   onKeyDown = (event) => {
     if (event.keyCode === 27) {
       this.props.onHide();
@@ -68,11 +90,8 @@ class DebouncedTableSearch extends React.Component {
   };
 
   render() {
-    const { classes, options, onHide, searchText } = this.props;
+    const { classes, options, onHide } = this.props;
     let value = this.state.text;
-    if (searchText && searchText.value !== undefined) {
-      value = searchText.value;
-    }
 
     return (
       <Grow appear in={true} timeout={300}>
