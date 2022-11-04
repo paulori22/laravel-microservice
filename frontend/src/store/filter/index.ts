@@ -6,6 +6,8 @@ import {
   SetSearchAction,
   State,
   Actions,
+  UpdateExtraFilterAction,
+  SetResetAction,
 } from "./types";
 
 export const { Types, Creators } = createActions<
@@ -15,20 +17,25 @@ export const { Types, Creators } = createActions<
     SET_PER_PAGE: string;
     SET_ORDER: string;
     SET_RESET: string;
+    UPDATE_EXTRA_FILTER: string;
   },
   {
     setSearch(payload: SetSearchAction["payload"]): SetSearchAction;
     setPage(payload: SetPageAction["payload"]): SetPageAction;
     setPerPage(payload: SetPerPageAction["payload"]): SetPerPageAction;
     setOrder(payload: SetOrderAction["payload"]): SetOrderAction;
-    setReset();
+    setReset(): SetResetAction;
+    updateExtraFilter(
+      payload: UpdateExtraFilterAction["payload"]
+    ): UpdateExtraFilterAction;
   }
 >({
   setSearch: ["payload"],
   setPage: ["payload"],
   setPerPage: ["payload"],
   setOrder: ["payload"],
-  setReset: [],
+  setReset: ["payload"],
+  updateExtraFilter: ["payload"],
 });
 
 export const INITIAL_STATE: State = {
@@ -49,6 +56,7 @@ const reducer = createReducer<State, Actions>(INITIAL_STATE, {
   [Types.SET_PER_PAGE]: setPerPage as any,
   [Types.SET_ORDER]: setOrder as any,
   [Types.SET_RESET]: setReset as any,
+  [Types.UPDATE_EXTRA_FILTER]: updateExtraFilter as any,
 });
 
 export default reducer;
@@ -98,5 +106,18 @@ function setReset(state: State = INITIAL_STATE, action): State {
   return {
     ...INITIAL_STATE,
     search: { value: null, update: true },
+  };
+}
+
+function updateExtraFilter(
+  state: State = INITIAL_STATE,
+  action: UpdateExtraFilterAction
+): State {
+  return {
+    ...state,
+    extraFilter: {
+      ...state.extraFilter,
+      ...action.payload,
+    },
   };
 }

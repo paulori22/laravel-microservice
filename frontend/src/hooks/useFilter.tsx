@@ -17,6 +17,14 @@ interface FilterManagerOptions {
   rowsPerPageOptions: number[];
   debounceTime: number;
   history: History;
+  //tableRef: React.MutableRefObject<any>;
+  extraFilter?: ExtraFilter;
+}
+
+interface ExtraFilter {
+  getStateFromURL: (queryParams: URLSearchParams) => any;
+  formatSearchParams: (debouncedState: FilterState) => any;
+  createValidationSchema: () => any;
 }
 
 interface UseFilterOptions extends Omit<FilterManagerOptions, "history"> {}
@@ -57,13 +65,16 @@ export class FilterManager {
   rowsPerPage: number;
   rowsPerPageOptions: number[];
   history: History;
+  extraFilter?: ExtraFilter;
 
   constructor(options: FilterManagerOptions) {
-    const { columns, rowsPerPage, rowsPerPageOptions, history } = options;
+    const { columns, rowsPerPage, rowsPerPageOptions, history, extraFilter } =
+      options;
     this.columns = columns;
     this.rowsPerPage = rowsPerPage;
     this.rowsPerPageOptions = rowsPerPageOptions;
     this.history = history;
+    this.extraFilter = extraFilter;
     this.createValidationSchema();
   }
 
@@ -86,6 +97,10 @@ export class FilterManager {
         dir: direction.includes("desc") ? "desc" : "asc",
       })
     );
+  }
+
+  changeExtraFilter(data) {
+    this.dispatch(Creators.updateExtraFilter(data));
   }
 
   applyOrderInColumns() {
@@ -151,6 +166,7 @@ export class FilterManager {
         sort: this.state.order.sort,
         dir: this.state.order.dir,
       }),
+      ...(this.extraFilter && this.extraFilter.formatSearchParams(this.state)),
     };
   }
 
@@ -168,6 +184,9 @@ export class FilterManager {
         sort: queryParams.get("sort"),
         dir: queryParams.get("dir"),
       },
+      ...(this.extraFilter && {
+        extraFilter: this.extraFilter.getStateFromURL(queryParams),
+      }),
     });
   }
 
@@ -214,6 +233,9 @@ export class FilterManager {
               : value
           )
           .default(null),
+      }),
+      ...(this.extraFilter && {
+        extraFilter: this.extraFilter.createValidationSchema(),
       }),
     });
   }
