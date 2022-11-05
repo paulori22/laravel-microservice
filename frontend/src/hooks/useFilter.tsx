@@ -10,6 +10,7 @@ import {
 } from "../store/filter/types";
 import { isEqual } from "lodash";
 import * as yup from "../util/vendor/yup";
+import { MuiDataTableRefComponent } from "../components/Table";
 
 interface FilterManagerOptions {
   columns: MUIDataTableColumn[];
@@ -17,7 +18,7 @@ interface FilterManagerOptions {
   rowsPerPageOptions: number[];
   debounceTime: number;
   history: History;
-  //tableRef: React.MutableRefObject<any>;
+  tableRef: React.MutableRefObject<MuiDataTableRefComponent>;
   extraFilter?: ExtraFilter;
 }
 
@@ -64,18 +65,31 @@ export class FilterManager {
   columns: MUIDataTableColumn[];
   rowsPerPage: number;
   rowsPerPageOptions: number[];
+  tableRef: React.MutableRefObject<MuiDataTableRefComponent>;
   history: History;
   extraFilter?: ExtraFilter;
 
   constructor(options: FilterManagerOptions) {
-    const { columns, rowsPerPage, rowsPerPageOptions, history, extraFilter } =
-      options;
+    const {
+      columns,
+      rowsPerPage,
+      rowsPerPageOptions,
+      history,
+      extraFilter,
+      tableRef,
+    } = options;
     this.columns = columns;
     this.rowsPerPage = rowsPerPage;
     this.rowsPerPageOptions = rowsPerPageOptions;
     this.history = history;
     this.extraFilter = extraFilter;
+    this.tableRef = tableRef;
     this.createValidationSchema();
+  }
+
+  private resetTablePagination() {
+    this.tableRef.current.changeRowsPerPage(this.rowsPerPage);
+    this.tableRef.current.changePage(0);
   }
 
   changeSearch(value) {
@@ -97,10 +111,16 @@ export class FilterManager {
         dir: direction.includes("desc") ? "desc" : "asc",
       })
     );
+    this.resetTablePagination();
   }
 
   changeExtraFilter(data) {
     this.dispatch(Creators.updateExtraFilter(data));
+  }
+
+  resetFilter() {
+    this.dispatch(Creators.setReset());
+    this.resetTablePagination();
   }
 
   applyOrderInColumns() {

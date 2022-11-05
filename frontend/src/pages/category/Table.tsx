@@ -6,6 +6,7 @@ import { BadgeNo, BadgeYes } from "../../components/Badge";
 import { Category, ListReponse } from "../../util/models";
 import DefaultTable, {
   makeActionsStyles,
+  MuiDataTableRefComponent,
   TableColumn,
 } from "../../components/Table";
 import { useSnackbar } from "notistack";
@@ -91,6 +92,8 @@ export const Table: React.FC = () => {
   const subscribed = useRef(true);
   const [data, setData] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
+
   const {
     columns,
     filterState,
@@ -104,6 +107,7 @@ export const Table: React.FC = () => {
     debounceTime: debouncedTime,
     rowsPerPage,
     rowsPerPageOptions,
+    tableRef,
   });
 
   useEffect(() => {
@@ -156,6 +160,7 @@ export const Table: React.FC = () => {
   return (
     <MuiThemeProvider theme={makeActionsStyles(columnsDefinition.length - 1)}>
       <DefaultTable
+        ref={tableRef}
         title="Listagem de categorias"
         columns={columns}
         data={data}

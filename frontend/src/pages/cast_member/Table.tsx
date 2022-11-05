@@ -10,6 +10,7 @@ import castMemberHttp from "../../util/http/cast-member-http";
 import { CastMember, ListReponse, CastMemberTypeMap } from "../../util/models";
 import DefaultTable, {
   makeActionsStyles,
+  MuiDataTableRefComponent,
   TableColumn,
 } from "../../components/Table";
 import useFilter from "../../hooks/useFilter";
@@ -90,6 +91,8 @@ export const Table: React.FC = () => {
   const subscribed = useRef(true);
   const [data, setData] = useState<CastMember[]>([]);
   const [loading, setLoading] = useState(false);
+  const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
+
   const {
     columns,
     filterState,
@@ -133,6 +136,7 @@ export const Table: React.FC = () => {
         };
       },
     },
+    tableRef,
   });
 
   const indexColumnType = columns.findIndex((c) => c.name === "type");
@@ -214,6 +218,7 @@ export const Table: React.FC = () => {
   return (
     <MuiThemeProvider theme={makeActionsStyles(columnsDefinition.length - 1)}>
       <DefaultTable
+        ref={tableRef}
         title="Listagem de Membros do Elenco"
         columns={columns}
         data={data}

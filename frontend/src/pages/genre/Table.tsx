@@ -5,6 +5,7 @@ import { BadgeNo, BadgeYes } from "../../components/Badge";
 import genreHttp from "../../util/http/genre-http";
 import DefaultTable, {
   makeActionsStyles,
+  MuiDataTableRefComponent,
   TableColumn,
 } from "../../components/Table";
 import { IconButton, MuiThemeProvider } from "@material-ui/core";
@@ -14,7 +15,6 @@ import { useSnackbar } from "notistack";
 import { Genre, ListReponse } from "../../util/models";
 import useFilter from "../../hooks/useFilter";
 import FilterResetButton from "../../components/Table/FilterResetButton";
-import { Creators } from "../../store/filter";
 import * as yup from "yup";
 import categoryHttp from "../../util/http/category-http";
 
@@ -107,11 +107,12 @@ export const Table: React.FC = () => {
   const subscribed = useRef(true);
   const [data, setData] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(false);
+  const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
+
   const {
     columns,
     filterState,
     debouncedFilterState,
-    dispatch,
     totalRecords,
     setTotalRecords,
     filterManager,
@@ -147,6 +148,7 @@ export const Table: React.FC = () => {
         };
       },
     },
+    tableRef,
   });
 
   const indexColumnCategories = columns.findIndex(
@@ -219,12 +221,6 @@ export const Table: React.FC = () => {
   const getData = async () => {
     setLoading(true);
     try {
-      console.log({
-        ...(debouncedFilterState.extraFilter &&
-          debouncedFilterState.extraFilter.categories && {
-            categories: debouncedFilterState.extraFilter.categories,
-          }),
-      });
       const { data } = await genreHttp.list<ListReponse<Genre>>({
         queryParams: {
           search: filterManager.cleanSearchText(filterState.search),
@@ -258,6 +254,7 @@ export const Table: React.FC = () => {
   return (
     <MuiThemeProvider theme={makeActionsStyles(columnsDefinition.length - 1)}>
       <DefaultTable
+        ref={tableRef}
         title="Listagem de Gêneros"
         columns={columns}
         data={data}
@@ -274,11 +271,6 @@ export const Table: React.FC = () => {
           count: totalRecords,
           onFilterChange: (column, filterList) => {
             const columnIndex = columns.findIndex((c) => c.name === column);
-            console.log({
-              [column]: filterList[columnIndex].length
-                ? filterList[columnIndex]
-                : null,
-            });
             filterManager.changeExtraFilter({
               [column]: filterList[columnIndex].length
                 ? filterList[columnIndex]
@@ -287,7 +279,7 @@ export const Table: React.FC = () => {
           },
           customToolbar: () => (
             <FilterResetButton
-              handleClick={() => dispatch(Creators.setReset())}
+              handleClick={() => filterManager.resetFilter()}
             />
           ),
           onSearchChange: (value) => filterManager.changeSearch(value),
