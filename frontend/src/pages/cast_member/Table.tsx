@@ -243,13 +243,14 @@ export const Table: React.FC = () => {
           },
           customToolbar: () => (
             <FilterResetButton
-              handleClick={() => dispatch(Creators.setReset())}
+              handleClick={() => filterManager.resetFilter()}
             />
           ),
           onSearchChange: (value) => filterManager.changeSearch(value),
           onChangePage: (page) => filterManager.changePage(page),
-          onChangeRowsPerPage: (per_page) =>
-            filterManager.changeRowsPerPage(per_page),
+          onChangeRowsPerPage: (per_page) => {
+            filterManager.changeRowsPerPage(per_page);
+          },
           onColumnSortChange: (changedColumn, direction) =>
             filterManager.changeColumnSort(changedColumn, direction),
         }}

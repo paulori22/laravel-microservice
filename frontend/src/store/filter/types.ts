@@ -42,7 +42,11 @@ export interface SetOrderAction extends AnyAction {
   };
 }
 
-export interface SetResetAction extends AnyAction {}
+export interface SetResetAction extends AnyAction {
+  payload: {
+    state: State;
+  };
+}
 
 export interface UpdateExtraFilterAction extends AnyAction {
   payload: { [key: string]: any };

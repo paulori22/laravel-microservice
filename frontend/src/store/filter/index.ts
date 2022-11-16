@@ -24,7 +24,7 @@ export const { Types, Creators } = createActions<
     setPage(payload: SetPageAction["payload"]): SetPageAction;
     setPerPage(payload: SetPerPageAction["payload"]): SetPerPageAction;
     setOrder(payload: SetOrderAction["payload"]): SetOrderAction;
-    setReset(): SetResetAction;
+    setReset(payload: SetResetAction["payload"]): SetResetAction;
     updateExtraFilter(
       payload: UpdateExtraFilterAction["payload"]
     ): UpdateExtraFilterAction;
@@ -103,10 +103,7 @@ function setOrder(state = INITIAL_STATE, action: SetOrderAction): State {
 }
 
 function setReset(state: State = INITIAL_STATE, action): State {
-  return {
-    ...INITIAL_STATE,
-    search: { value: null, update: true },
-  };
+  return action.payload.state;
 }
 
 function updateExtraFilter(

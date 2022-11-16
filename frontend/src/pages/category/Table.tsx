@@ -176,7 +176,7 @@ export const Table: React.FC = () => {
           count: totalRecords,
           customToolbar: () => (
             <FilterResetButton
-              handleClick={() => dispatch(Creators.setReset())}
+              handleClick={() => filterManager.resetFilter()}
             />
           ),
           onSearchChange: (value) => filterManager.changeSearch(value),
