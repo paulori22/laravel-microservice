@@ -9,6 +9,9 @@ import PageFormCastMember from "../pages/cast_member/PageForm";
 import PageListGenre from "../pages/genre/PageList";
 import PageFormGenre from "../pages/genre/PageForm";
 
+import PageListVideo from "../pages/video/PageList";
+import PageFormVideo from "../pages/video/PageForm";
+
 import Dashboard from "../pages/Dashboard";
 
 export interface MyRouteProps extends RouteProps {
@@ -85,6 +88,27 @@ const routes: MyRouteProps[] = [
     label: "Editar Gênero",
     path: "/genres/:id/edit",
     component: PageFormGenre,
+    exact: true,
+  },
+  {
+    name: "videos.list",
+    label: "Listar Vídeos",
+    path: "/genres",
+    component: PageListVideo,
+    exact: true,
+  },
+  {
+    name: "videos.create",
+    label: "Criar Vídeo",
+    path: "/videos/create",
+    component: PageFormVideo,
+    exact: true,
+  },
+  {
+    name: "videos.edit",
+    label: "Editar Vídeo",
+    path: "/videos/:id/edit",
+    component: PageFormVideo,
     exact: true,
   },
 ];
