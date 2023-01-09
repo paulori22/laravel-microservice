@@ -10,7 +10,6 @@ import {
   RadioGroup,
 } from "@material-ui/core";
 import React from "react";
-import { Controller } from "react-hook-form";
 import Rating from "../../../components/Rating";
 
 interface RatingFieldProps {

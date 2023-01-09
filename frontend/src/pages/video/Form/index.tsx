@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import {
-  Button,
-  ButtonProps,
   Card,
   CardContent,
   Checkbox,
   FormControlLabel,
+  FormHelperText,
   Grid,
   makeStyles,
   TextField,
@@ -27,8 +26,8 @@ import DefaultForm from "../../../components/DefaultForm";
 import RatingField from "./RatingField";
 import UploadField from "./UploadField";
 import { VideoFileFieldsMap } from "../../../util/models";
-import AsyncAutoComplete from "../../../components/AsyncAutoComplete";
-import genreHttp from "../../../util/http/genre-http";
+import GenreField from "./GenreField";
+import CategoryField from "./CategoryField";
 
 const useStyles = makeStyles((theme: Theme) => ({
   cardUpload: {
@@ -43,7 +42,7 @@ const validationSchema = yup.object().shape({
   description: yup.string().label("Sinopse").required(),
   year_release: yup.number().label("Ano de lançamento").required().min(1),
   duration: yup.number().label("Duração").required().min(1),
-  /*   cast_members: yup.array().label("Elenco").required(),
+  //cast_members: yup.array().label("Elenco").required(),
   genres: yup
     .array()
     .label("Gêneros")
@@ -61,7 +60,7 @@ const validationSchema = yup.object().shape({
         );
       },
     }),
-  categories: yup.array().label("Categorias").required(), */
+  categories: yup.array().label("Categorias").required(),
   rating: yup.string().label("Classificação").required(),
 });
 
@@ -100,7 +99,9 @@ export const Form = () => {
   const isGreaterMd = useMediaQuery(theme.breakpoints.up("md"));
 
   useEffect(() => {
-    ["rating", "opened", ...fileFields].forEach((name) => register({ name }));
+    ["rating", "opened", "genres", "categories", ...fileFields].forEach(
+      (name) => register({ name })
+    );
   }, [register]);
 
   useEffect(() => {
@@ -165,16 +166,6 @@ export const Form = () => {
       .finally(() => setLoading(false));
   };
 
-  const fetchOptions = (searchText) =>
-    genreHttp
-      .list({
-        queryParams: {
-          searchText,
-          all: "",
-        },
-      })
-      .then(({ data }) => data);
-
   return (
     <DefaultForm onSubmit={handleSubmit(onSubmit)} GridItemProps={{ xs: 12 }}>
       <Grid container spacing={5}>
@@ -236,19 +227,33 @@ export const Form = () => {
               />
             </Grid>
           </Grid>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <GenreField
+                genres={watch("genres")}
+                setGenres={(value) => setValue("genres", value, true)}
+                error={errors.genres}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <CategoryField
+                categories={watch("categories")}
+                setCategories={(value) => setValue("categories", value, true)}
+                genres={watch("genres")}
+                error={errors.categories}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormHelperText>Escolha os gêneros do vídeo</FormHelperText>
+            </Grid>
+            <Grid item xs={12}>
+              <FormHelperText>
+                Escolha pelo menos uma categoria de cada gênero
+              </FormHelperText>
+            </Grid>
+          </Grid>
         </Grid>
-        <AsyncAutoComplete
-          fetchOptions={fetchOptions}
-          AutoCompleteProps={{
-            freeSolo: true,
-            getOptionLabel(option) {
-              return option.name;
-            },
-          }}
-          TextFieldProps={{
-            label: "Gêneros",
-          }}
-        />
+
         <Grid item xs={12} md={6}>
           <Controller
             as={
