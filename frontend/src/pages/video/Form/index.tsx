@@ -43,11 +43,8 @@ const validationSchema = yup.object().shape({
   year_release: yup.number().label("Ano de lançamento").required().min(1),
   duration: yup.number().label("Duração").required().min(1),
   //cast_members: yup.array().label("Elenco").required(),
-  genres: yup
-    .array()
-    .label("Gêneros")
-    .required()
-    .test({
+  genres: yup.array().label("Gêneros").required(),
+  /*  .test({
       message:
         "Cada gênero escolhido precisa ter pelo menos uma categoria selecionada",
       test(value) {
@@ -59,8 +56,7 @@ const validationSchema = yup.object().shape({
             ).length !== 0
         );
       },
-    }),
-  categories: yup.array().label("Categorias").required(),
+    }) */ categories: yup.array().label("Categorias").required(),
   rating: yup.string().label("Classificação").required(),
 });
 
@@ -232,7 +228,10 @@ export const Form = () => {
               <GenreField
                 genres={watch("genres")}
                 setGenres={(value) => setValue("genres", value, true)}
+                categories={watch("categories")}
+                setCategories={(value) => setValue("categories", value, true)}
                 error={errors.genres}
+                disabled={loading}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -241,6 +240,7 @@ export const Form = () => {
                 setCategories={(value) => setValue("categories", value, true)}
                 genres={watch("genres")}
                 error={errors.categories}
+                disabled={loading}
               />
             </Grid>
             <Grid item xs={12}>

@@ -12,18 +12,26 @@ import GridSelectedItem from "../../../components/GridSelectedItem";
 import useCollectionManager from "../../../hooks/useCollectionManager";
 import useHttpHandler from "../../../hooks/useHttpHandler";
 import genreHttp from "../../../util/http/genre-http";
+import { getGenresFromCategory } from "../../../util/model-filters";
 
 interface GenreFieldProps {
   genres: any[];
   setGenres: (genres) => void;
+  categories: any[];
+  setCategories: (categories) => void;
   error: any;
   disabled?: boolean;
   FormControlProps?: FormControlProps;
 }
 
 const GenreField: React.FC<GenreFieldProps> = (props) => {
-  const { genres, setGenres, error, disabled } = props;
+  const { genres, setGenres, error, disabled, categories, setCategories } =
+    props;
   const { addItem, removeItem } = useCollectionManager(genres, setGenres);
+  const { removeItem: removeCategory } = useCollectionManager(
+    categories,
+    setCategories
+  );
 
   const autocompleteHttp = useHttpHandler();
   const fetchOptions = (searchText) =>
@@ -41,12 +49,13 @@ const GenreField: React.FC<GenreFieldProps> = (props) => {
       <AsyncAutoComplete
         fetchOptions={fetchOptions}
         AutoCompleteProps={{
-          autoSelect: true,
+          //autoSelect: true,
           clearOnEscape: true,
           freeSolo: true,
           getOptionLabel(option) {
             return option.name;
           },
+          getOptionSelected: (option, value) => option.id === value.id,
           onChange: (_, value) => addItem(value),
           disabled,
         }}
@@ -64,7 +73,26 @@ const GenreField: React.FC<GenreFieldProps> = (props) => {
       >
         <GridSelected>
           {genres.map((genre, index) => (
-            <GridSelectedItem key={index} onClick={() => {}} xs={12}>
+            <GridSelectedItem
+              key={index}
+              onDelete={() => {
+                const categoriesWithOneGenre = categories.filter((category) => {
+                  const genresFromCategory = getGenresFromCategory(
+                    genres,
+                    category
+                  );
+                  return (
+                    genresFromCategory.length === 1 &&
+                    genresFromCategory[0].id == genre.id
+                  );
+                });
+                categoriesWithOneGenre.forEach((category) =>
+                  removeCategory(category)
+                );
+                removeItem(genre);
+              }}
+              xs={12}
+            >
               <Typography noWrap={true}>{genre.name}</Typography>
             </GridSelectedItem>
           ))}
