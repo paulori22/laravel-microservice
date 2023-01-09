@@ -5,17 +5,18 @@ import {
   UseAutocompleteSingleProps,
 } from "@material-ui/lab";
 import { CircularProgress, TextField, TextFieldProps } from "@material-ui/core";
-import { useSnackbar } from "notistack";
+import { useDebounce } from "use-debounce/lib";
 
 interface AsyncAutoCompleteProps {
   fetchOptions: (searchText) => Promise<any>;
+  debounceTime?: number;
   TextFieldProps?: TextFieldProps;
   AutoCompleteProps?: Omit<AutocompleteProps<any>, "renderInput"> &
     UseAutocompleteSingleProps<any>;
 }
 
 const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
-  const { AutoCompleteProps } = props;
+  const { AutoCompleteProps, debounceTime = 300 } = props;
   const {
     onOpen,
     onClose,
@@ -25,10 +26,9 @@ const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
 
   const [open, setOpen] = useState(false);
   const [searchText, setSerchText] = useState("");
+  const [debouncedSearchText] = useDebounce(searchText, debounceTime);
   const [loading, setLoading] = useState(false);
   const [options, setOptions] = useState([]);
-
-  const snackbar = useSnackbar();
 
   const textFieldProps: TextFieldProps = {
     margin: "normal",
@@ -81,7 +81,7 @@ const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
   }, [open]);
 
   useEffect(() => {
-    if (!open || (searchText === "" && freeSolo)) {
+    if (!open || (debouncedSearchText === "" && freeSolo)) {
       return;
     }
 
@@ -90,7 +90,7 @@ const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
     (async function getCategory() {
       setLoading(true);
       try {
-        const data = await props.fetchOptions(searchText);
+        const data = await props.fetchOptions(debouncedSearchText);
         if (isSubscribed) {
           setOptions(data);
         }
@@ -101,7 +101,7 @@ const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
     return () => {
       isSubscribed = false;
     };
-  }, [freeSolo ? searchText : open]);
+  }, [freeSolo ? debouncedSearchText : open]);
 
   return <Autocomplete {...autocompleteProps} />;
 };
