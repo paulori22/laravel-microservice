@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { format, parseISO } from "date-fns";
 
-import { BadgeNo, BadgeYes } from "../../components/Badge";
-import genreHttp from "../../util/http/genre-http";
+import videoHttp from "../../util/http/video-http";
 import DefaultTable, {
   makeActionsStyles,
   MuiDataTableRefComponent,
@@ -12,17 +11,9 @@ import { IconButton, MuiThemeProvider } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import { Link } from "react-router-dom";
 import { useSnackbar } from "notistack";
-import { Genre, ListReponse } from "../../util/models";
+import { Genre, Category, ListReponse, Video } from "../../util/models";
 import useFilter from "../../hooks/useFilter";
 import FilterResetButton from "../../components/Table/FilterResetButton";
-import * as yup from "yup";
-import categoryHttp from "../../util/http/category-http";
-
-type Category = {
-  id: string;
-  name: string;
-  is_active: string;
-};
 
 const columnsDefinition: TableColumn[] = [
   {
@@ -35,32 +26,29 @@ const columnsDefinition: TableColumn[] = [
     },
   },
   {
-    name: "name",
-    label: "Nome",
+    name: "title",
+    label: "Título",
     options: {
       filter: false,
+    },
+  },
+  {
+    name: "genres",
+    label: "Gêneros",
+    options: {
+      filter: false,
+      customBodyRender(genres: Genre[]) {
+        return genres.map((c) => c.name).join(", ");
+      },
     },
   },
   {
     name: "categories",
     label: "Categorias",
     options: {
-      filterType: "multiselect",
-      filterOptions: {
-        names: [],
-      },
+      filter: false,
       customBodyRender(categories: Category[]) {
         return categories.map((c) => c.name).join(", ");
-      },
-    },
-  },
-  {
-    name: "is_active",
-    label: "Ativo?",
-    options: {
-      filter: false,
-      customBodyRender(value) {
-        return value ? <BadgeYes /> : <BadgeNo />;
       },
     },
   },
@@ -86,7 +74,7 @@ const columnsDefinition: TableColumn[] = [
           <IconButton
             color="secondary"
             component={Link}
-            to={`/genres/${tableMeta.rowData[0]}/edit`}
+            to={`/videos/${tableMeta.rowData[0]}/edit`}
           >
             <EditIcon />
           </IconButton>
@@ -105,7 +93,7 @@ export const Table: React.FC = () => {
   const snackbar = useSnackbar();
 
   const subscribed = useRef(true);
-  const [data, setData] = useState<Genre[]>([]);
+  const [data, setData] = useState<Video[]>([]);
   const [loading, setLoading] = useState(false);
   const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
 
@@ -121,87 +109,8 @@ export const Table: React.FC = () => {
     debounceTime: debouncedTime,
     rowsPerPage,
     rowsPerPageOptions,
-    extraFilter: {
-      createValidationSchema: () => {
-        return yup.object().shape({
-          categories: yup
-            .mixed()
-            .nullable()
-            .transform((value) => {
-              return !value || value === "" ? undefined : value.split(",");
-            })
-            .default(null),
-        });
-      },
-      formatSearchParams: (debouncedState) => {
-        return debouncedState.extraFilter
-          ? {
-              ...(debouncedState.extraFilter.categories && {
-                categories: debouncedState.extraFilter.categories.join(","),
-              }),
-            }
-          : undefined;
-      },
-      getStateFromURL: (queryParams) => {
-        return {
-          categories: queryParams.get("categories"),
-        };
-      },
-    },
     tableRef,
   });
-
-  const indexColumnCategories = columns.findIndex(
-    (c) => c.name === "categories"
-  );
-  const columnCategories = columns[indexColumnCategories];
-  const categoriesFilterValue =
-    filterState.extraFilter && (filterState.extraFilter.categories as never);
-  (columnCategories.options as any).filterList = categoriesFilterValue
-    ? categoriesFilterValue
-    : [];
-
-  const serverSideFilterList = columns.map(() => []);
-  if (categoriesFilterValue) {
-    serverSideFilterList[indexColumnCategories] = categoriesFilterValue;
-  }
-
-  useEffect(() => {
-    let isSubscribed = true;
-    (async () => {
-      try {
-        const { data } = await categoryHttp.list({ queryParams: { all: "" } });
-        if (isSubscribed) {
-          (columnCategories.options as any).filterOptions.names = data.data.map(
-            (category) => category.name
-          );
-        }
-      } catch (error) {
-        console.error(error);
-        snackbar.enqueueSnackbar("Não foi possivel carregar as informações", {
-          variant: "error",
-        });
-      }
-    })();
-
-    return () => {
-      isSubscribed = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let isSubscribed = true;
-    (async () => {
-      const { data } = await genreHttp.list();
-      if (isSubscribed) {
-        setData(data.data);
-      }
-    })();
-
-    return () => {
-      isSubscribed = false;
-    };
-  }, []);
 
   useEffect(() => {
     subscribed.current = true;
@@ -221,17 +130,13 @@ export const Table: React.FC = () => {
   const getData = async () => {
     setLoading(true);
     try {
-      const { data } = await genreHttp.list<ListReponse<Genre>>({
+      const { data } = await videoHttp.list<ListReponse<Video>>({
         queryParams: {
           search: filterManager.cleanSearchText(filterState.search),
           page: filterState.pagination.page,
           per_page: filterState.pagination.per_page,
           sort: filterState.order.sort,
           dir: filterState.order.dir,
-          ...(debouncedFilterState.extraFilter &&
-            debouncedFilterState.extraFilter.categories && {
-              categories: debouncedFilterState.extraFilter.categories.join(","),
-            }),
         },
       });
       if (subscribed.current) {
@@ -240,7 +145,7 @@ export const Table: React.FC = () => {
       }
     } catch (error) {
       console.error(error);
-      if (genreHttp.isCanceledRequest(error)) {
+      if (videoHttp.isCanceledRequest(error)) {
         return;
       }
       snackbar.enqueueSnackbar("Não foi possível carregar as informações", {
@@ -255,13 +160,12 @@ export const Table: React.FC = () => {
     <MuiThemeProvider theme={makeActionsStyles(columnsDefinition.length - 1)}>
       <DefaultTable
         ref={tableRef}
-        title="Listagem de Gêneros"
+        title="Listagem de Vídeos"
         columns={columns}
         data={data}
         loading={loading}
         debouncedSearchTime={debouncedSearchTime}
         options={{
-          serverSideFilterList,
           serverSide: true,
           responsive: "scrollMaxHeight",
           searchText: filterState.search as any,

@@ -77,7 +77,9 @@ const RatingField: React.FC<RatingFieldProps> = ({
         <RadioGroup
           aria-label="rating"
           value={value}
-          onChange={(_, value) => setValue(value)}
+          onChange={(_, value) => {
+            setValue(value);
+          }}
           row
         >
           {ratings.map((props, index) => (
@@ -86,7 +88,7 @@ const RatingField: React.FC<RatingFieldProps> = ({
         </RadioGroup>
       </Box>
 
-      {error && <FormHelperText>error.message</FormHelperText>}
+      {error && <FormHelperText>{error.message}</FormHelperText>}
     </FormControl>
   );
 };

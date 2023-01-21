@@ -93,7 +93,7 @@ const routes: MyRouteProps[] = [
   {
     name: "videos.list",
     label: "Listar Vídeos",
-    path: "/genres",
+    path: "/videos",
     component: PageListVideo,
     exact: true,
   },
