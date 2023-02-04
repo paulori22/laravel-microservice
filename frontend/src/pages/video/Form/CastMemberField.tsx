@@ -4,29 +4,39 @@ import {
   FormHelperText,
   Typography,
 } from "@material-ui/core";
-import React from "react";
+import React, { MutableRefObject, useImperativeHandle, useRef } from "react";
 
-import AsyncAutoComplete from "../../../components/AsyncAutoComplete";
+import AsyncAutoComplete, {
+  AsyncAutoCompleteComponent,
+} from "../../../components/AsyncAutoComplete";
 import GridSelected from "../../../components/GridSelected";
 import GridSelectedItem from "../../../components/GridSelectedItem";
 import useCollectionManager from "../../../hooks/useCollectionManager";
 import useHttpHandler from "../../../hooks/useHttpHandler";
 import castMemberHttp from "../../../util/http/cast-member-http";
 
-interface CastMemberFieldFieldProps {
+interface CastMemberFieldProps {
   castMembers: any[];
   setCastMembers: (category) => void;
   error: any;
   disabled?: boolean;
   FormControlProps?: FormControlProps;
 }
+export interface CastMemberFieldComponent {
+  clear: () => void;
+}
 
-const CastMemberField: React.FC<CastMemberFieldFieldProps> = (props) => {
+const CastMemberField = React.forwardRef<
+  CastMemberFieldComponent,
+  CastMemberFieldProps
+>((props, ref) => {
   const { castMembers, setCastMembers, error, disabled } = props;
   const { addItem, removeItem } = useCollectionManager(
     castMembers,
     setCastMembers
   );
+  const autocompleteRef =
+    useRef() as MutableRefObject<AsyncAutoCompleteComponent>;
 
   const autocompleteHttp = useHttpHandler();
   const fetchOptions = (searchText) =>
@@ -39,9 +49,14 @@ const CastMemberField: React.FC<CastMemberFieldFieldProps> = (props) => {
       })
     ).then((data) => data.data);
 
+  useImperativeHandle(ref, () => ({
+    clear: () => autocompleteRef.current.clear(),
+  }));
+
   return (
     <>
       <AsyncAutoComplete
+        ref={autocompleteRef}
         fetchOptions={fetchOptions}
         AutoCompleteProps={{
           //autoSelect: true,
@@ -84,6 +99,6 @@ const CastMemberField: React.FC<CastMemberFieldFieldProps> = (props) => {
       </FormControl>
     </>
   );
-};
+});
 
 export default CastMemberField;

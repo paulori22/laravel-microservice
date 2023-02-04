@@ -1,4 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  createRef,
+  MutableRefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Card,
   CardContent,
@@ -25,16 +31,24 @@ import DefaultForm from "../../../components/DefaultForm";
 import RatingField from "./RatingField";
 import UploadField from "./UploadField";
 import { Video, VideoFileFieldsMap } from "../../../util/models";
-import GenreField from "./GenreField";
-import CategoryField from "./CategoryField";
-import CastMemberField from "./CastMemberField";
-import { omit } from "lodash";
+import GenreField, { GenreFieldComponent } from "./GenreField";
+import CategoryField, { CategoryFieldComponent } from "./CategoryField";
+import CastMemberField, { CastMemberFieldComponent } from "./CastMemberField";
+import { omit, zipObject } from "lodash";
+import { InputFileComponent } from "../../../components/InputFile";
 
 const useStyles = makeStyles((theme: Theme) => ({
   cardUpload: {
     borderRadius: "4px",
     backgroundColor: "#f5f5f5",
     margin: theme.spacing(2, 0),
+  },
+  cardOpened: {
+    borderRadius: "4px",
+    backgroundColor: "#f5f5f5",
+  },
+  cardContentOpened: {
+    paddingBottom: theme.spacing(2) + "px !important",
   },
 }));
 
@@ -98,6 +112,17 @@ export const Form = () => {
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
   const isGreaterMd = useMediaQuery(theme.breakpoints.up("md"));
+  const castMemberRef = useRef() as MutableRefObject<CastMemberFieldComponent>;
+  const genreRef = useRef() as MutableRefObject<GenreFieldComponent>;
+  const categoryRef = useRef() as MutableRefObject<CategoryFieldComponent>;
+  const uploadsRef = useRef(
+    zipObject(
+      fileFields,
+      fileFields.map(() => createRef())
+    )
+  ) as MutableRefObject<{
+    [key: string]: MutableRefObject<InputFileComponent>;
+  }>;
 
   useEffect(() => {
     [
@@ -135,7 +160,7 @@ export const Form = () => {
     };
   }, [id]);
 
-  const onSubmit = (formData, event) => {
+  const onSubmit = async (formData, event) => {
     const sendData = omit(formData, [
       "genres",
       "categories",
@@ -150,30 +175,44 @@ export const Form = () => {
       (castMember) => castMember.id
     );
 
-    const http = !video
-      ? videoHttp.create(sendData)
-      : videoHttp.update(video.id, { ...sendData, _method: "PUT" });
+    try {
+      const http = !video
+        ? videoHttp.create(sendData)
+        : videoHttp.update(
+            video.id,
+            { ...sendData, _method: "PUT" },
+            { http: { usePost: true } }
+          );
+      const { data } = await http;
+      enqueueSnackbar("Vídeo salvo com sucesso", {
+        variant: "success",
+      });
+      id && resetForm(data);
+      setTimeout(() => {
+        event
+          ? id
+            ? history.replace(`/videos/${data.data.id}/edit`)
+            : history.push(`/videos/${data.data.id}/edit`)
+          : history.push("/videos");
+      });
+    } catch (error) {
+      console.log(error);
+      enqueueSnackbar("Não foi possivel salvar o vídeo", {
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    http
-      .then(({ data }) => {
-        enqueueSnackbar("Vídeo salvo com sucesso", {
-          variant: "success",
-        });
-        setTimeout(() => {
-          event
-            ? id
-              ? history.replace(`/videos/${data.data.id}/edit`)
-              : history.push(`/videos/${data.data.id}/edit`)
-            : history.push("/videos");
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-        enqueueSnackbar("Não foi possivel salvar o vídeo", {
-          variant: "error",
-        });
-      })
-      .finally(() => setLoading(false));
+  const resetForm = (data) => {
+    Object.keys(uploadsRef.current).forEach((field) =>
+      uploadsRef.current[field].current.clear()
+    );
+    castMemberRef.current.clear();
+    genreRef.current.clear();
+    categoryRef.current.clear();
+    //reset(data);
   };
 
   return (
@@ -240,6 +279,7 @@ export const Form = () => {
           <Grid container>
             <Grid item xs={12}>
               <CastMemberField
+                ref={castMemberRef}
                 castMembers={watch("cast_members")}
                 setCastMembers={(value) =>
                   setValue("cast_members", value, true)
@@ -252,6 +292,7 @@ export const Form = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <GenreField
+                ref={genreRef}
                 genres={watch("genres")}
                 setGenres={(value) => setValue("genres", value, true)}
                 categories={watch("categories")}
@@ -262,6 +303,7 @@ export const Form = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <CategoryField
+                ref={categoryRef}
                 categories={watch("categories")}
                 setCategories={(value) => setValue("categories", value, true)}
                 genres={watch("genres")}
@@ -296,11 +338,13 @@ export const Form = () => {
                 Imagens
               </Typography>
               <UploadField
+                ref={uploadsRef.current["thumb_file"]}
                 accept="image/*"
                 label="Thump"
                 setValue={(value) => setValue("thumb_file", value)}
               />
               <UploadField
+                ref={uploadsRef.current["banner_file"]}
                 accept="image/*"
                 label="Banner"
                 setValue={(value) => setValue("banner_file", value)}
@@ -313,11 +357,13 @@ export const Form = () => {
                 Videos
               </Typography>
               <UploadField
+                ref={uploadsRef.current["trailer_file"]}
                 accept="video/mp4"
                 label="Trailer"
                 setValue={(value) => setValue("trailer_file", value)}
               />
               <UploadField
+                ref={uploadsRef.current["video_file"]}
                 accept="video/mp4"
                 label="Principal"
                 setValue={(value) => setValue("video_file", value)}
@@ -325,29 +371,33 @@ export const Form = () => {
             </CardContent>
           </Card>
 
-          <Controller
-            as={
-              <FormControlLabel
-                disabled={loading}
-                control={
-                  <Checkbox
-                    color="primary"
-                    name="opened"
-                    checked={watch("opened")}
-                    onChange={(_, value) => setValue("opened", value)}
+          <Card className={classes.cardOpened}>
+            <CardContent className={classes.cardContentOpened}>
+              <Controller
+                as={
+                  <FormControlLabel
+                    disabled={loading}
+                    control={
+                      <Checkbox
+                        color="primary"
+                        name="opened"
+                        checked={watch("opened")}
+                        onChange={(_, value) => setValue("opened", value)}
+                      />
+                    }
+                    label={
+                      <Typography color="primary" variant="subtitle2">
+                        Quero que este conteúdo apareça na seção lançamentos
+                      </Typography>
+                    }
+                    labelPlacement="end"
                   />
                 }
-                label={
-                  <Typography color="primary" variant="subtitle2">
-                    Quero que este conteúdo apareça na seção lançamentos
-                  </Typography>
-                }
-                labelPlacement="end"
+                name="opened"
+                control={control}
               />
-            }
-            name="opened"
-            control={control}
-          />
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
       <SubmitActions

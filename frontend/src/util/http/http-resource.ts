@@ -5,6 +5,7 @@ import {
   CancelTokenSource,
 } from "axios";
 import axios from "axios";
+import { objectToFormData } from "object-to-formdata";
 
 export default class HttpResource {
   private cancelList: CancelTokenSource | null = null;
@@ -31,11 +32,19 @@ export default class HttpResource {
   }
 
   create<T = any>(data) {
-    return this.http.post<T>(this.resource, data);
+    const sendData = this.makeSendData(data);
+    return this.http.post<T>(this.resource, sendData);
   }
 
-  update<T = any>(id, data) {
-    return this.http.put<T>(`${this.resource}/${id}`, data);
+  update<T = any>(id, data, options?: { http?: { usePost: boolean } }) {
+    let sendData = data;
+    if (this.containsFile(data)) {
+      sendData = this.getFormData(data);
+    }
+    const { http } = (options || {}) as any;
+    return !options || !http || !http.usePost
+      ? this.http.put<T>(`${this.resource}/${id}`, sendData)
+      : this.http.post<T>(`${this.resource}/${id}`, sendData);
   }
 
   delete<T = any>(id) {
@@ -44,5 +53,19 @@ export default class HttpResource {
 
   isCanceledRequest(error) {
     return axios.isCancel(error);
+  }
+
+  private makeSendData(data) {
+    return this.containsFile(data) ? this.getFormData(data) : data;
+  }
+
+  private containsFile(data) {
+    return (
+      Object.values(data).filter((field) => field instanceof File).length !== 0
+    );
+  }
+
+  private getFormData(data) {
+    return objectToFormData(data, { booleansAsIntegers: true });
   }
 }
