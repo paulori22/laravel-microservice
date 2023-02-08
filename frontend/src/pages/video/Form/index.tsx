@@ -36,6 +36,7 @@ import CategoryField, { CategoryFieldComponent } from "./CategoryField";
 import CastMemberField, { CastMemberFieldComponent } from "./CastMemberField";
 import { omit, zipObject } from "lodash";
 import { InputFileComponent } from "../../../components/InputFile";
+import useSnackbarFormError from "../../../hooks/useSnackbarFormError";
 
 const useStyles = makeStyles((theme: Theme) => ({
   cardUpload: {
@@ -82,27 +83,36 @@ const validationSchema = yup.object().shape({
 const fileFields = Object.keys(VideoFileFieldsMap);
 
 export const Form = () => {
-  const { register, handleSubmit, control, setValue, watch, errors, reset } =
-    useForm<{
-      title;
-      description;
-      year_release;
-      duration;
-      rating;
-      cast_members;
-      genres;
-      categories;
-      opened;
-    }>({
-      validationSchema,
-      defaultValues: {
-        rating: null,
-        cast_members: [],
-        genres: [],
-        categories: [],
-        opened: false,
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    formState,
+    errors,
+    reset,
+  } = useForm<{
+    title;
+    description;
+    year_release;
+    duration;
+    rating;
+    cast_members;
+    genres;
+    categories;
+    opened;
+  }>({
+    validationSchema,
+    defaultValues: {
+      rating: null,
+      cast_members: [],
+      genres: [],
+      categories: [],
+      opened: false,
+    },
+  });
+  useSnackbarFormError(formState.submitCount, errors);
 
   const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();

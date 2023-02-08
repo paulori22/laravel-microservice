@@ -17,6 +17,7 @@ import { useHistory, useParams } from "react-router";
 import { Category } from "../../util/models";
 import SubmitActions from "../../components/SubmitActions";
 import DefaultForm from "../../components/DefaultForm";
+import useSnackbarFormError from "../../hooks/useSnackbarFormError";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -41,15 +42,24 @@ const validationSchema = yup.object().shape({
 export const Form = () => {
   const classes = useStyles();
 
-  const { register, handleSubmit, control, setValue, watch, errors, reset } =
-    useForm({
-      validationSchema,
-      defaultValues: {
-        name: "",
-        is_active: true,
-        categories_id: [],
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    formState,
+    errors,
+    reset,
+  } = useForm({
+    validationSchema,
+    defaultValues: {
+      name: "",
+      is_active: true,
+      categories_id: [],
+    },
+  });
+  useSnackbarFormError(formState.submitCount, errors);
 
   const snackbar = useSnackbar();
   const history = useHistory();

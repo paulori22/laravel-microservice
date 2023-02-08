@@ -17,6 +17,7 @@ import * as yup from "../../util/vendor/yup";
 import { CastMember } from "../../util/models";
 import SubmitActions from "../../components/SubmitActions";
 import DefaultForm from "../../components/DefaultForm";
+import useSnackbarFormError from "../../hooks/useSnackbarFormError";
 
 const castMembersType = [
   { label: "Diretor", value: "1" },
@@ -29,14 +30,24 @@ const validationSchema = yup.object().shape({
 });
 
 export const Form = () => {
-  const { register, handleSubmit, control, setValue, errors, reset, watch } =
-    useForm({
-      validationSchema,
-      defaultValues: {
-        name: "",
-        type: "",
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState,
+    errors,
+    reset,
+    watch,
+  } = useForm({
+    validationSchema,
+    defaultValues: {
+      name: "",
+      type: "",
+    },
+  });
+
+  useSnackbarFormError(formState.submitCount, errors);
 
   const snackbar = useSnackbar();
   const history = useHistory();

@@ -9,21 +9,32 @@ import categoryHttp from "../../util/http/category-http";
 import { Category } from "../../util/models";
 import DefaultForm from "../../components/DefaultForm";
 import SubmitActions from "../../components/SubmitActions";
+import useSnackbarFormError from "../../hooks/useSnackbarFormError";
 
 const validationSchema = yup.object().shape({
   name: yup.string().label("Nome").required().max(255),
 });
 
 export const Form = () => {
-  const { register, handleSubmit, errors, reset, watch, setValue, control } =
-    useForm({
-      validationSchema,
-      defaultValues: {
-        name: "",
-        description: "",
-        is_active: true,
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    errors,
+    reset,
+    watch,
+    formState,
+    setValue,
+    control,
+  } = useForm({
+    validationSchema,
+    defaultValues: {
+      name: "",
+      description: "",
+      is_active: true,
+    },
+  });
+
+  useSnackbarFormError(formState.submitCount, errors);
 
   const snackbar = useSnackbar();
   const history = useHistory();
