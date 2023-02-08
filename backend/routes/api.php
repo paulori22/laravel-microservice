@@ -23,7 +23,11 @@ Route::group(['namespace' => 'Api'], function () {
         'except' => ['create', 'edit']
     ];
     Route::resource('categories', 'CategoryController', $exceptAndEdit);
+    Route::delete('categories', 'CategoryController@destroyCollection');
     Route::resource('genres', 'GenreController', $exceptAndEdit);
+    Route::delete('genres', 'GenreController@destroyCollection');
     Route::resource('cast_members', 'CastMemberController', $exceptAndEdit);
+    Route::delete('cast_members', 'CastMemberController@destroyCollection');
     Route::resource('videos', 'VideoController', $exceptAndEdit);
+    Route::delete('videos', 'VideoController@destroyCollection');
 });

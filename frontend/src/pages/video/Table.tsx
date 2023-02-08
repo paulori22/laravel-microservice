@@ -14,6 +14,8 @@ import { useSnackbar } from "notistack";
 import { Genre, Category, ListReponse, Video } from "../../util/models";
 import useFilter from "../../hooks/useFilter";
 import FilterResetButton from "../../components/Table/FilterResetButton";
+import DeleteDialog from "../../components/DeleteDialog";
+import useDeleteCollection from "../../hooks/useDeleteCollection";
 
 const columnsDefinition: TableColumn[] = [
   {
@@ -96,6 +98,12 @@ export const Table: React.FC = () => {
   const [data, setData] = useState<Video[]>([]);
   const [loading, setLoading] = useState(false);
   const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
+  const {
+    openDeleteDialog,
+    rowsToDelete,
+    setOpenDeleteDialog,
+    setRowsToDelete,
+  } = useDeleteCollection();
 
   const {
     columns,
@@ -142,6 +150,9 @@ export const Table: React.FC = () => {
       if (subscribed.current) {
         setData(data.data);
         setTotalRecords(data.meta.total);
+        if (openDeleteDialog) {
+          setOpenDeleteDialog(false);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -156,8 +167,41 @@ export const Table: React.FC = () => {
     }
   };
 
+  const deleteRows = (confirmed: boolean) => {
+    if (!confirmed) {
+      setOpenDeleteDialog(false);
+      return;
+    }
+    const ids = rowsToDelete.data
+      .map((value) => data[value.index].id)
+      .join(",");
+    videoHttp
+      .deleteCollection({ ids })
+      .then(() => {
+        snackbar.enqueueSnackbar("Registros excluídos com sucesso", {
+          variant: "success",
+        });
+        if (
+          rowsToDelete.data.length === filterState.pagination.per_page &&
+          filterState.pagination.page > 1
+        ) {
+          const page = filterState.pagination.page - 2;
+          filterManager.changePage(page);
+        } else {
+          getData();
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        snackbar.enqueueSnackbar("Não foi possível excluir os registros", {
+          variant: "error",
+        });
+      });
+  };
+
   return (
     <MuiThemeProvider theme={makeActionsStyles(columnsDefinition.length - 1)}>
+      <DeleteDialog open={openDeleteDialog} handleClose={deleteRows} />
       <DefaultTable
         ref={tableRef}
         title="Listagem de Vídeos"
@@ -192,6 +236,10 @@ export const Table: React.FC = () => {
             filterManager.changeRowsPerPage(per_page),
           onColumnSortChange: (changedColumn, direction) =>
             filterManager.changeColumnSort(changedColumn, direction),
+          onRowsDelete(rowsDeleted: any[]) {
+            setRowsToDelete(rowsDeleted as any);
+            return false;
+          },
         }}
       />
     </MuiThemeProvider>
