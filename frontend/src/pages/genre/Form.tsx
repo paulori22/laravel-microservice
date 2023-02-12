@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   ButtonProps,
   Checkbox,
@@ -18,6 +18,7 @@ import { Category } from "../../util/models";
 import SubmitActions from "../../components/SubmitActions";
 import DefaultForm from "../../components/DefaultForm";
 import useSnackbarFormError from "../../hooks/useSnackbarFormError";
+import LoadingContext from "../../components/loading/LoadingContext";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -65,7 +66,7 @@ export const Form = () => {
   const history = useHistory();
   const { id } = useParams();
   const [genre, setGenre] = useState<{ id: string } | null>(null);
-  const [loading, setLoading] = useState(false);
+  const loading = useContext(LoadingContext);
 
   const buttonProps: ButtonProps = {
     className: classes.submit,
@@ -77,7 +78,6 @@ export const Form = () => {
   useEffect(() => {
     let isSubscribed = true;
     (async () => {
-      setLoading(true);
       const promisses = [categoryHttp.list({ queryParams: { all: "" } })];
       if (id) {
         promisses.push(genreHttp.get(id));
@@ -100,8 +100,6 @@ export const Form = () => {
         snackbar.enqueueSnackbar("Não foi possivel carregar as informações", {
           variant: "error",
         });
-      } finally {
-        setLoading(false);
       }
     })();
 
@@ -135,8 +133,7 @@ export const Form = () => {
         snackbar.enqueueSnackbar("Não foi possivel salvar o gênero", {
           variant: "error",
         });
-      })
-      .finally(() => setLoading(false));
+      });
   };
 
   const [categories, setCategories] = useState<Category[]>([]);

@@ -1,6 +1,7 @@
 import React, {
   createRef,
   MutableRefObject,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -37,6 +38,7 @@ import CastMemberField, { CastMemberFieldComponent } from "./CastMemberField";
 import { omit, zipObject } from "lodash";
 import { InputFileComponent } from "../../../components/InputFile";
 import useSnackbarFormError from "../../../hooks/useSnackbarFormError";
+import LoadingContext from "../../../components/loading/LoadingContext";
 
 const useStyles = makeStyles((theme: Theme) => ({
   cardUpload: {
@@ -119,7 +121,8 @@ export const Form = () => {
   const history = useHistory();
   const { id } = useParams();
   const [video, setVideo] = useState<Video | null>(null);
-  const [loading, setLoading] = useState(false);
+  const loading = useContext(LoadingContext);
+
   const theme = useTheme();
   const isGreaterMd = useMediaQuery(theme.breakpoints.up("md"));
   const castMemberRef = useRef() as MutableRefObject<CastMemberFieldComponent>;
@@ -210,8 +213,6 @@ export const Form = () => {
       enqueueSnackbar("Não foi possivel salvar o vídeo", {
         variant: "error",
       });
-    } finally {
-      setLoading(false);
     }
   };
 

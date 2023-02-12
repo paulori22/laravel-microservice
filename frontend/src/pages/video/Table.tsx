@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { format, parseISO } from "date-fns";
 
 import videoHttp from "../../util/http/video-http";
@@ -16,6 +16,7 @@ import useFilter from "../../hooks/useFilter";
 import FilterResetButton from "../../components/Table/FilterResetButton";
 import DeleteDialog from "../../components/DeleteDialog";
 import useDeleteCollection from "../../hooks/useDeleteCollection";
+import LoadingContext from "../../components/loading/LoadingContext";
 
 const columnsDefinition: TableColumn[] = [
   {
@@ -96,7 +97,8 @@ export const Table: React.FC = () => {
 
   const subscribed = useRef(true);
   const [data, setData] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(false);
+  const loading = useContext(LoadingContext);
+
   const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
   const {
     openDeleteDialog,
@@ -136,7 +138,6 @@ export const Table: React.FC = () => {
   ]);
 
   const getData = async () => {
-    setLoading(true);
     try {
       const { data } = await videoHttp.list<ListReponse<Video>>({
         queryParams: {
@@ -162,8 +163,6 @@ export const Table: React.FC = () => {
       snackbar.enqueueSnackbar("Não foi possível carregar as informações", {
         variant: "error",
       });
-    } finally {
-      setLoading(false);
     }
   };
 

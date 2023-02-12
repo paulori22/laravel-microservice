@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { useSnackbar } from "notistack";
 import { IconButton, MuiThemeProvider } from "@material-ui/core";
@@ -15,8 +15,8 @@ import DefaultTable, {
 } from "../../components/Table";
 import useFilter from "../../hooks/useFilter";
 import FilterResetButton from "../../components/Table/FilterResetButton";
-import { Creators } from "../../store/filter";
 import { invert } from "lodash";
+import LoadingContext from "../../components/loading/LoadingContext";
 
 const castMemberNames = Object.values(CastMemberTypeMap);
 const columnsDefinition: TableColumn[] = [
@@ -90,7 +90,7 @@ export const Table: React.FC = () => {
 
   const subscribed = useRef(true);
   const [data, setData] = useState<CastMember[]>([]);
-  const [loading, setLoading] = useState(false);
+  const loading = useContext(LoadingContext);
   const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
 
   const {
@@ -181,7 +181,6 @@ export const Table: React.FC = () => {
   ]);
 
   const getData = async () => {
-    setLoading(true);
     try {
       const { data } = await castMemberHttp.list<ListReponse<CastMember>>({
         queryParams: {
@@ -210,8 +209,6 @@ export const Table: React.FC = () => {
       snackbar.enqueueSnackbar("Não foi possível carregar as informações", {
         variant: "error",
       });
-    } finally {
-      setLoading(false);
     }
   };
 

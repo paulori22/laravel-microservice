@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { format, parseISO } from "date-fns";
 
 import { BadgeNo, BadgeYes } from "../../components/Badge";
@@ -17,6 +17,7 @@ import useFilter from "../../hooks/useFilter";
 import FilterResetButton from "../../components/Table/FilterResetButton";
 import * as yup from "yup";
 import categoryHttp from "../../util/http/category-http";
+import LoadingContext from "../../components/loading/LoadingContext";
 
 type Category = {
   id: string;
@@ -106,7 +107,7 @@ export const Table: React.FC = () => {
 
   const subscribed = useRef(true);
   const [data, setData] = useState<Genre[]>([]);
-  const [loading, setLoading] = useState(false);
+  const loading = useContext(LoadingContext);
   const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
 
   const {
@@ -219,7 +220,6 @@ export const Table: React.FC = () => {
   ]);
 
   const getData = async () => {
-    setLoading(true);
     try {
       const { data } = await genreHttp.list<ListReponse<Genre>>({
         queryParams: {
@@ -246,8 +246,6 @@ export const Table: React.FC = () => {
       snackbar.enqueueSnackbar("Não foi possível carregar as informações", {
         variant: "error",
       });
-    } finally {
-      setLoading(false);
     }
   };
 

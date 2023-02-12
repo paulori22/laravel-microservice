@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   FormControl,
   FormControlLabel,
@@ -18,6 +18,7 @@ import { CastMember } from "../../util/models";
 import SubmitActions from "../../components/SubmitActions";
 import DefaultForm from "../../components/DefaultForm";
 import useSnackbarFormError from "../../hooks/useSnackbarFormError";
+import LoadingContext from "../../components/loading/LoadingContext";
 
 const castMembersType = [
   { label: "Diretor", value: "1" },
@@ -53,24 +54,19 @@ export const Form = () => {
   const history = useHistory();
   const { id } = useParams();
   const [castMember, setCastMember] = useState<CastMember | null>(null);
-  const [loading, setLoading] = useState(false);
+  const loading = useContext(LoadingContext);
 
   useEffect(() => {
     if (!id) {
       return;
     }
-    setLoading(true);
-    castMemberHttp
-      .get(id)
-      .then(({ data }) => {
-        setCastMember(data.data);
-        reset(data.data);
-      })
-      .finally(() => setLoading(false));
+    castMemberHttp.get(id).then(({ data }) => {
+      setCastMember(data.data);
+      reset(data.data);
+    });
   }, []);
 
   const onSubmit = (formData, event) => {
-    setLoading(true);
     const http = !castMember
       ? castMemberHttp.create(formData)
       : castMemberHttp.update(castMember.id, formData);
@@ -93,8 +89,7 @@ export const Form = () => {
         snackbar.enqueueSnackbar("Não foi possivel salvar a membro do elenco", {
           variant: "error",
         });
-      })
-      .finally(() => setLoading(false));
+      });
   };
 
   return (
