@@ -13,6 +13,10 @@ import CloseIcon from "@material-ui/icons/Close";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { useSnackbar } from "notistack";
 import classnames from "classnames";
+import { useSelector } from "react-redux";
+import { Upload, UploadModule } from "../../store/upload/types";
+import { countInProgress } from "../../store/upload/getters";
+import UploadItem from "./UploadItem";
 
 const useStyles = makeStyles((theme: Theme) => ({
   card: {
@@ -55,11 +59,18 @@ const SnackbarUpload = React.forwardRef<any, SnackbarUploadProps>(
     const { id } = props;
     const { closeSnackbar } = useSnackbar();
     const [expanded, setExpanded] = useState(true);
+
+    const uploads = useSelector<UploadModule, Upload[]>(
+      (state) => state.upload.uploads
+    );
+
+    const totalInProgress = countInProgress(uploads);
+
     return (
       <Card ref={ref} className={classes.card}>
         <CardActions classes={{ root: classes.cardActionsRoot }}>
           <Typography variant="subtitle2" className={classes.title}>
-            Fazendo upload de 10 vídeos
+            Fazendo upload de {totalInProgress} vídeos
           </Typography>
           <div className={classes.icons}>
             <IconButton
@@ -77,7 +88,11 @@ const SnackbarUpload = React.forwardRef<any, SnackbarUploadProps>(
           </div>
         </CardActions>
         <Collapse in={expanded}>
-          <List className={classes.list}>Items</List>
+          <List className={classes.list}>
+            {uploads.map((upload, key) => (
+              <UploadItem key={key} upload={upload} />
+            ))}
+          </List>
         </Collapse>
       </Card>
     );

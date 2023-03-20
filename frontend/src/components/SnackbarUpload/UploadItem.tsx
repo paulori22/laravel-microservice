@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Divider,
   ListItem,
@@ -10,6 +10,10 @@ import {
   Typography,
 } from "@material-ui/core";
 import MovieIcon from "@material-ui/icons/Movie";
+import { Upload } from "../../store/upload/types";
+import UploadProgress from "../UploadProgress";
+import UploadAction from "./UploadActions";
+import { hasError } from "../../store/upload/getters";
 
 const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
@@ -29,19 +33,34 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 interface UploadItemProps {
-  id: string | number;
+  upload: Upload;
 }
 
 const UploadItem: React.FC<UploadItemProps> = (props) => {
+  const { upload } = props;
   const classes = useStyles();
+
+  const error = hasError(upload);
+  const [itemHover, setItemHover] = useState(false);
 
   return (
     <>
       <Tooltip
-        title="Não foi possivel fazer o upload, clique para mais detalhes"
+        disableFocusListener
+        disableTouchListener
+        title={
+          error
+            ? "Não foi possivel fazer o upload, clique para mais detalhes"
+            : ""
+        }
         placement="left"
       >
-        <ListItem className={classes.listItem} button>
+        <ListItem
+          className={classes.listItem}
+          button
+          onMouseOver={() => setItemHover(true)}
+          onMouseLeave={() => setItemHover(false)}
+        >
           <ListItemIcon className={classes.movieIcon}>
             <MovieIcon />
           </ListItemIcon>
@@ -49,10 +68,12 @@ const UploadItem: React.FC<UploadItemProps> = (props) => {
             className={classes.listItemText}
             primary={
               <Typography noWrap={true} variant="subtitle2" color="inherit">
-                E o vento levou
+                {upload.video.title}
               </Typography>
             }
           />
+          <UploadProgress size={30} uploadOrFile={upload} />
+          <UploadAction upload={upload} hover={itemHover} />
         </ListItem>
       </Tooltip>
 

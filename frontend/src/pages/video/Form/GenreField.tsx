@@ -3,6 +3,7 @@ import {
   FormControlProps,
   FormHelperText,
   Typography,
+  useTheme,
 } from "@material-ui/core";
 import React, { MutableRefObject, useImperativeHandle, useRef } from "react";
 
@@ -43,6 +44,7 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>(
       useRef() as MutableRefObject<AsyncAutoCompleteComponent>;
 
     const autocompleteHttp = useHttpHandler();
+    const theme = useTheme();
     const fetchOptions = (searchText) =>
       autocompleteHttp(
         genreHttp.list({
@@ -77,6 +79,9 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>(
             error: error !== undefined,
           }}
         />
+        <FormHelperText style={{ height: theme.spacing(3) }}>
+          Escolha os gêneros do vídeo
+        </FormHelperText>
         <FormControl
           margin="normal"
           fullWidth

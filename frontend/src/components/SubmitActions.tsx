@@ -28,7 +28,7 @@ const SubmitActions: React.FC<SubmitActionsProps> = ({
   };
 
   return (
-    <Box dir="rtl">
+    <Box dir="ltl">
       <Button color="primary" {...buttonProps} onClick={handleSave}>
         Salvar
       </Button>

@@ -36,15 +36,34 @@ export default class HttpResource {
     return this.http.post<T>(this.resource, sendData);
   }
 
-  update<T = any>(id, data, options?: { http?: { usePost: boolean } }) {
+  update<T = any>(
+    id,
+    data,
+    options?: { http?: { usePost: boolean }; config?: AxiosRequestConfig }
+  ) {
     let sendData = data;
     if (this.containsFile(data)) {
       sendData = this.getFormData(data);
     }
-    const { http } = (options || {}) as any;
+    const { http, config } = (options || {}) as any;
     return !options || !http || !http.usePost
-      ? this.http.put<T>(`${this.resource}/${id}`, sendData)
-      : this.http.post<T>(`${this.resource}/${id}`, sendData);
+      ? this.http.put<T>(`${this.resource}/${id}`, sendData, config)
+      : this.http.post<T>(`${this.resource}/${id}`, sendData, config);
+  }
+
+  partialUpdate<T = any>(
+    id,
+    data,
+    options?: { http?: { usePost: boolean }; config?: AxiosRequestConfig }
+  ) {
+    let sendData = data;
+    if (this.containsFile(data)) {
+      sendData = this.getFormData(data);
+    }
+    const { http, config } = (options || {}) as any;
+    return !options || !http || !http.usePost
+      ? this.http.patch<T>(`${this.resource}/${id}`, sendData, config)
+      : this.http.post<T>(`${this.resource}/${id}`, sendData, config);
   }
 
   delete<T = any>(id) {

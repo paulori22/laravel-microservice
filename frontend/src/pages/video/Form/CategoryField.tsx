@@ -5,6 +5,7 @@ import {
   makeStyles,
   Theme,
   Typography,
+  useTheme,
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import React, { MutableRefObject, useImperativeHandle, useRef } from "react";
@@ -53,6 +54,7 @@ const CategoryField = React.forwardRef<
     useRef() as MutableRefObject<AsyncAutoCompleteComponent>;
 
   const autocompleteHttp = useHttpHandler();
+  const theme = useTheme();
   const fetchOptions = () =>
     autocompleteHttp(
       categoryHttp.list({
@@ -87,6 +89,9 @@ const CategoryField = React.forwardRef<
           error: error !== undefined,
         }}
       />
+      <FormHelperText style={{ height: theme.spacing(3) }}>
+        Escolha pelo menos uma categoria de cada gênero
+      </FormHelperText>
       <FormControl
         margin="normal"
         fullWidth
