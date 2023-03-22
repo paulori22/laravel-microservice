@@ -98,7 +98,6 @@ export const Table: React.FC = () => {
     columns,
     filterState,
     debouncedFilterState,
-    dispatch,
     totalRecords,
     setTotalRecords,
     filterManager,

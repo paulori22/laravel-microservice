@@ -11,7 +11,6 @@ import {
   CardContent,
   Checkbox,
   FormControlLabel,
-  FormHelperText,
   Grid,
   makeStyles,
   TextField,
@@ -39,13 +38,8 @@ import { omit, zipObject } from "lodash";
 import { InputFileComponent } from "../../../components/InputFile";
 import useSnackbarFormError from "../../../hooks/useSnackbarFormError";
 import LoadingContext from "../../../components/loading/LoadingContext";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  UploadState as UploadState,
-  Upload,
-  UploadModule,
-  FileInfo,
-} from "../../../store/upload/types";
+import { useDispatch } from "react-redux";
+import { FileInfo } from "../../../store/upload/types";
 import { Creators } from "../../../store/upload";
 import SnackbarUpload from "../../../components/SnackbarUpload";
 
@@ -146,10 +140,6 @@ export const Form = () => {
   ) as MutableRefObject<{
     [key: string]: MutableRefObject<InputFileComponent>;
   }>;
-
-  const uploads = useSelector<UploadModule, Upload[]>(
-    (state) => state.upload.uploads
-  );
 
   const dispatch = useDispatch();
 

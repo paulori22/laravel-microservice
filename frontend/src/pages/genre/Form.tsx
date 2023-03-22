@@ -7,7 +7,7 @@ import {
   TextField,
   Theme,
 } from "@material-ui/core";
-import { Controller, FieldError, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import genreHttp from "../../util/http/genre-http";
 import categoryHttp from "../../util/http/category-http";
 
@@ -67,13 +67,6 @@ export const Form = () => {
   const { id } = useParams();
   const [genre, setGenre] = useState<{ id: string } | null>(null);
   const loading = useContext(LoadingContext);
-
-  const buttonProps: ButtonProps = {
-    className: classes.submit,
-    color: "secondary",
-    variant: "contained",
-    disabled: loading,
-  };
 
   useEffect(() => {
     let isSubscribed = true;
