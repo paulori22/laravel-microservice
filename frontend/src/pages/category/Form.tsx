@@ -37,7 +37,7 @@ export const Form = () => {
 
   useSnackbarFormError(formState.submitCount, errors);
 
-  const snackbar = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
   const { id } = useParams();
   const [category, setCategory] = useState<Category | null>(null);
@@ -54,12 +54,12 @@ export const Form = () => {
         reset(data.data);
       } catch (error) {
         console.error(error);
-        snackbar.enqueueSnackbar("Não foi possível carregar as informações", {
+        enqueueSnackbar("Não foi possível carregar as informações", {
           variant: "error",
         });
       }
     })();
-  }, []);
+  }, [id, reset, enqueueSnackbar]);
 
   const onSubmit = async (formData, event) => {
     try {
@@ -67,7 +67,7 @@ export const Form = () => {
         ? categoryHttp.create(formData)
         : categoryHttp.update(category.id, formData);
       const { data } = await http;
-      snackbar.enqueueSnackbar("Categoria salva com sucesso", {
+      enqueueSnackbar("Categoria salva com sucesso", {
         variant: "success",
       });
       setTimeout(() => {
@@ -79,7 +79,7 @@ export const Form = () => {
       });
     } catch (error) {
       console.error(error);
-      snackbar.enqueueSnackbar("Não foi possivel salvar a categoria", {
+      enqueueSnackbar("Não foi possivel salvar a categoria", {
         variant: "error",
       });
     }

@@ -5,7 +5,12 @@ import {
   Typography,
   useTheme,
 } from "@material-ui/core";
-import React, { MutableRefObject, useImperativeHandle, useRef } from "react";
+import React, {
+  MutableRefObject,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+} from "react";
 
 import AsyncAutoComplete, {
   AsyncAutoCompleteComponent,
@@ -45,19 +50,23 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>(
 
     const autocompleteHttp = useHttpHandler();
     const theme = useTheme();
-    const fetchOptions = (searchText) =>
-      autocompleteHttp(
-        genreHttp.list({
-          queryParams: {
-            searchText,
-            all: "",
-          },
-        })
-      ).then((data) => data.data);
+    const fetchOptions = useCallback(
+      (searchText) =>
+        autocompleteHttp(
+          genreHttp.list({
+            queryParams: {
+              searchText,
+              all: "",
+            },
+          })
+        ).then((data) => data.data),
+      [autocompleteHttp]
+    );
 
     useImperativeHandle(ref, () => ({
       clear: () => autocompleteRef.current.clear(),
     }));
+
     return (
       <>
         <AsyncAutoComplete

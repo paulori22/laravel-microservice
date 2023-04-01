@@ -1,6 +1,7 @@
 import React, {
   createRef,
   MutableRefObject,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -143,6 +144,19 @@ export const Form = () => {
 
   const dispatch = useDispatch();
 
+  const resetForm = useCallback(
+    (data) => {
+      Object.keys(uploadsRef.current).forEach((field) =>
+        uploadsRef.current[field].current.clear()
+      );
+      castMemberRef.current.clear();
+      genreRef.current.clear();
+      categoryRef.current.clear();
+      reset(data);
+    },
+    [castMemberRef, categoryRef, genreRef, reset, uploadsRef]
+  );
+
   useEffect(() => {
     [
       "rating",
@@ -165,7 +179,7 @@ export const Form = () => {
         const { data } = await videoHttp.get(id);
         if (isSubscribed) {
           setVideo(data.data);
-          reset({ ...data.data });
+          resetForm(data.data);
         }
       } catch (error) {
         console.error(error);
@@ -177,7 +191,7 @@ export const Form = () => {
     return () => {
       isSubscribed = false;
     };
-  }, [id]);
+  }, [id, resetForm, enqueueSnackbar]);
 
   const onSubmit = async (formData, event) => {
     const sendData = omit(formData, [
@@ -219,22 +233,10 @@ export const Form = () => {
     }
   };
 
-  const resetForm = (data) => {
-    Object.keys(uploadsRef.current).forEach((field) =>
-      uploadsRef.current[field].current.clear()
-    );
-    castMemberRef.current.clear();
-    genreRef.current.clear();
-    categoryRef.current.clear();
-    //reset(data);
-  };
-
   const uploadFiles = (video) => {
     const files: FileInfo[] = fileFields
       .filter((fileField) => getValues()[fileField])
       .map((fileField) => ({ fileField, file: getValues()[fileField] }));
-
-    console.log(video, files);
 
     if (!files.length) {
       return;

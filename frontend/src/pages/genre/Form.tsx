@@ -62,7 +62,7 @@ export const Form = () => {
   });
   useSnackbarFormError(formState.submitCount, errors);
 
-  const snackbar = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
   const { id } = useParams();
   const [genre, setGenre] = useState<{ id: string } | null>(null);
@@ -90,7 +90,7 @@ export const Form = () => {
         }
       } catch (error) {
         console.error(error);
-        snackbar.enqueueSnackbar("Não foi possivel carregar as informações", {
+        enqueueSnackbar("Não foi possivel carregar as informações", {
           variant: "error",
         });
       }
@@ -99,7 +99,7 @@ export const Form = () => {
     return () => {
       isSubscribed = false;
     };
-  }, []);
+  }, [id, reset, enqueueSnackbar]);
 
   const selectedCategories = watch("categories_id", []);
 
@@ -110,7 +110,7 @@ export const Form = () => {
 
     http
       .then(({ data }) => {
-        snackbar.enqueueSnackbar("Gênero salvo com sucesso", {
+        enqueueSnackbar("Gênero salvo com sucesso", {
           variant: "success",
         });
         setTimeout(() => {
@@ -123,7 +123,7 @@ export const Form = () => {
       })
       .catch((error) => {
         console.log(error);
-        snackbar.enqueueSnackbar("Não foi possivel salvar o gênero", {
+        enqueueSnackbar("Não foi possivel salvar o gênero", {
           variant: "error",
         });
       });

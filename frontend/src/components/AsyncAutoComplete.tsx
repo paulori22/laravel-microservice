@@ -28,7 +28,7 @@ const AsyncAutoComplete = React.forwardRef<
   AsyncAutoCompleteComponent,
   AsyncAutoCompleteProps
 >((props, ref) => {
-  const { AutoCompleteProps, debounceTime = 300 } = props;
+  const { AutoCompleteProps, debounceTime = 300, fetchOptions } = props;
   const {
     onOpen,
     onClose,
@@ -91,10 +91,13 @@ const AsyncAutoComplete = React.forwardRef<
     if (!open && !freeSolo) {
       setOptions([]);
     }
-  }, [open]);
+  }, [open, freeSolo]);
 
   useEffect(() => {
-    if (!open || (debouncedSearchText === "" && freeSolo)) {
+    if (!open) {
+      return;
+    }
+    if (debouncedSearchText === "" && freeSolo) {
       return;
     }
 
@@ -103,7 +106,7 @@ const AsyncAutoComplete = React.forwardRef<
     (async function getCategory() {
       setLoading(true);
       try {
-        const data = await props.fetchOptions(debouncedSearchText);
+        const data = await fetchOptions(debouncedSearchText);
         if (isSubscribed) {
           setOptions(data);
         }
@@ -114,7 +117,7 @@ const AsyncAutoComplete = React.forwardRef<
     return () => {
       isSubscribed = false;
     };
-  }, [freeSolo ? debouncedSearchText : open]);
+  }, [freeSolo, debouncedSearchText, open, fetchOptions]);
 
   useImperativeHandle(ref, () => ({
     clear: () => {

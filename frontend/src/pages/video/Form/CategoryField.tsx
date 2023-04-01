@@ -8,7 +8,12 @@ import {
   useTheme,
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import React, { MutableRefObject, useImperativeHandle, useRef } from "react";
+import React, {
+  MutableRefObject,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+} from "react";
 
 import AsyncAutoComplete, {
   AsyncAutoCompleteComponent,
@@ -55,15 +60,18 @@ const CategoryField = React.forwardRef<
 
   const autocompleteHttp = useHttpHandler();
   const theme = useTheme();
-  const fetchOptions = () =>
-    autocompleteHttp(
-      categoryHttp.list({
-        queryParams: {
-          genres: genres.map((genre) => genre.id).join(","),
-          all: "",
-        },
-      })
-    ).then((data) => data.data);
+  const fetchOptions = useCallback(
+    () =>
+      autocompleteHttp(
+        categoryHttp.list({
+          queryParams: {
+            genres: genres.map((genre) => genre.id).join(","),
+            all: "",
+          },
+        })
+      ).then((data) => data.data),
+    [autocompleteHttp]
+  );
 
   useImperativeHandle(ref, () => ({
     clear: () => autocompleteRef.current.clear(),

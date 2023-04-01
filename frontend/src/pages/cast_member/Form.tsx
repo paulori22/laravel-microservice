@@ -64,7 +64,7 @@ export const Form = () => {
       setCastMember(data.data);
       reset(data.data);
     });
-  }, []);
+  }, [id, reset]);
 
   const onSubmit = (formData, event) => {
     const http = !castMember
