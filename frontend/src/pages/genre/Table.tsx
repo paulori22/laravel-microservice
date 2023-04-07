@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { format, parseISO } from "date-fns";
 
 import { BadgeNo, BadgeYes } from "../../components/Badge";
@@ -110,19 +110,8 @@ export const Table: React.FC = () => {
   const loading = useContext(LoadingContext);
   const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
 
-  const {
-    columns,
-    filterState,
-    debouncedFilterState,
-    totalRecords,
-    setTotalRecords,
-    filterManager,
-  } = useFilter({
-    columns: columnsDefinition,
-    debounceTime: debouncedTime,
-    rowsPerPage,
-    rowsPerPageOptions,
-    extraFilter: {
+  const extraFilter = useMemo(
+    () => ({
       createValidationSchema: () => {
         return yup.object().shape({
           categories: yup
@@ -148,7 +137,24 @@ export const Table: React.FC = () => {
           categories: queryParams.get("categories"),
         };
       },
-    },
+    }),
+    []
+  );
+
+  const {
+    columns,
+    filterState,
+    debouncedFilterState,
+    totalRecords,
+    setTotalRecords,
+    filterManager,
+    cleanSearchText,
+  } = useFilter({
+    columns: columnsDefinition,
+    debounceTime: debouncedTime,
+    rowsPerPage,
+    rowsPerPageOptions,
+    extraFilter,
     tableRef,
   });
 
@@ -206,13 +212,12 @@ export const Table: React.FC = () => {
 
   useEffect(() => {
     subscribed.current = true;
-    filterManager.pushHistory();
     getData();
     return () => {
       subscribed.current = false;
     };
   }, [
-    filterManager.cleanSearchText(debouncedFilterState.search),
+    cleanSearchText(debouncedFilterState.search),
     debouncedFilterState.pagination.page,
     debouncedFilterState.pagination.per_page,
     debouncedFilterState.order,
@@ -223,7 +228,7 @@ export const Table: React.FC = () => {
     try {
       const { data } = await genreHttp.list<ListReponse<Genre>>({
         queryParams: {
-          search: filterManager.cleanSearchText(filterState.search),
+          search: cleanSearchText(filterState.search),
           page: filterState.pagination.page,
           per_page: filterState.pagination.per_page,
           sort: filterState.order.sort,
