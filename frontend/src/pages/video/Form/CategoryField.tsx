@@ -70,7 +70,7 @@ const CategoryField = React.forwardRef<
           },
         })
       ).then((data) => data.data),
-    [autocompleteHttp]
+    [autocompleteHttp, genres]
   );
 
   useImperativeHandle(ref, () => ({

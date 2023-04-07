@@ -1,12 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import {
-  ButtonProps,
-  Checkbox,
-  makeStyles,
-  MenuItem,
-  TextField,
-  Theme,
-} from "@material-ui/core";
+import { Checkbox, MenuItem, TextField } from "@material-ui/core";
 import { Controller, useForm } from "react-hook-form";
 import genreHttp from "../../util/http/genre-http";
 import categoryHttp from "../../util/http/category-http";
@@ -20,29 +13,12 @@ import DefaultForm from "../../components/DefaultForm";
 import useSnackbarFormError from "../../hooks/useSnackbarFormError";
 import LoadingContext from "../../components/loading/LoadingContext";
 
-const useStyles = makeStyles((theme: Theme) => {
-  return {
-    submit: {
-      margin: theme.spacing(1),
-    },
-    chips: {
-      display: "flex",
-      flexWrap: "wrap",
-    },
-    chip: {
-      margin: 2,
-    },
-  };
-});
-
 const validationSchema = yup.object().shape({
   name: yup.string().label("Nome").required().max(255),
   categories_id: yup.array(yup.string()).label("Categorias").required(),
 });
 
 export const Form = () => {
-  const classes = useStyles();
-
   const {
     register,
     handleSubmit,

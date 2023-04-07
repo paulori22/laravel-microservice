@@ -12,7 +12,7 @@ export function* uploadWatcherSaga() {
 
     for (const fileInfo of payload.files) {
       try {
-        const response = yield call(uploadFile, {
+        yield call(uploadFile, {
           video: payload.video,
           fileInfo,
         });

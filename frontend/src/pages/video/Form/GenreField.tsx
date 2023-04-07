@@ -111,7 +111,7 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>(
                       );
                       return (
                         genresFromCategory.length === 1 &&
-                        genresFromCategory[0].id == genre.id
+                        genresFromCategory[0].id === genre.id
                       );
                     }
                   );
