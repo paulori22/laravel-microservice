@@ -1,4 +1,11 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { format, parseISO } from "date-fns";
 import { useSnackbar } from "notistack";
 import { IconButton, MuiThemeProvider } from "@material-ui/core";
@@ -86,7 +93,7 @@ const rowsPerPage = 15;
 const rowsPerPageOptions = [15, 25, 50];
 
 export const Table: React.FC = () => {
-  const snackbar = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
 
   const subscribed = useRef(true);
   const [data, setData] = useState<CastMember[]>([]);
@@ -143,6 +150,7 @@ export const Table: React.FC = () => {
     extraFilter,
     tableRef,
   });
+  const searchText = cleanSearchText(debouncedFilterState.search);
 
   const indexColumnType = columns.findIndex((c) => c.name === "type");
   const columnType = columns[indexColumnType];
@@ -170,52 +178,65 @@ export const Table: React.FC = () => {
     };
   }, []);
 
+  const getData = useCallback(
+    async ({ search, page, per_page, sort, dir, type }) => {
+      try {
+        const { data } = await castMemberHttp.list<ListReponse<CastMember>>({
+          queryParams: {
+            search,
+            page,
+            per_page,
+            sort,
+            dir,
+            ...(type && {
+              type: invert(CastMemberTypeMap)[type],
+            }),
+          },
+        });
+        if (subscribed.current) {
+          setData(data.data);
+          setTotalRecords(data.meta.total);
+        }
+      } catch (error) {
+        console.error(error);
+        if (castMemberHttp.isCanceledRequest(error)) {
+          return;
+        }
+        enqueueSnackbar("Não foi possível carregar as informações", {
+          variant: "error",
+        });
+      }
+    },
+    [setTotalRecords, enqueueSnackbar]
+  );
+
   useEffect(() => {
     subscribed.current = true;
 
-    getData();
+    getData({
+      search: searchText,
+      page: debouncedFilterState.pagination.page,
+      per_page: debouncedFilterState.pagination.per_page,
+      sort: debouncedFilterState.order.sort,
+      dir: debouncedFilterState.order.dir,
+      ...(debouncedFilterState.extraFilter &&
+        debouncedFilterState.extraFilter.type && {
+          type: invert(CastMemberTypeMap)[
+            debouncedFilterState.extraFilter.type
+          ],
+        }),
+    });
     return () => {
       subscribed.current = false;
     };
   }, [
-    cleanSearchText(debouncedFilterState.search),
+    getData,
+    searchText,
     debouncedFilterState.pagination.page,
     debouncedFilterState.pagination.per_page,
     debouncedFilterState.order,
-    JSON.stringify(debouncedFilterState.extraFilter),
+    debouncedFilterState.extraFilter,
   ]);
-
-  const getData = async () => {
-    try {
-      const { data } = await castMemberHttp.list<ListReponse<CastMember>>({
-        queryParams: {
-          search: cleanSearchText(filterState.search),
-          page: filterState.pagination.page,
-          per_page: filterState.pagination.per_page,
-          sort: filterState.order.sort,
-          dir: filterState.order.dir,
-          ...(debouncedFilterState.extraFilter &&
-            debouncedFilterState.extraFilter.type && {
-              type: invert(CastMemberTypeMap)[
-                debouncedFilterState.extraFilter.type
-              ],
-            }),
-        },
-      });
-      if (subscribed.current) {
-        setData(data.data);
-        setTotalRecords(data.meta.total);
-      }
-    } catch (error) {
-      console.error(error);
-      if (castMemberHttp.isCanceledRequest(error)) {
-        return;
-      }
-      snackbar.enqueueSnackbar("Não foi possível carregar as informações", {
-        variant: "error",
-      });
-    }
-  };
 
   return (
     <MuiThemeProvider theme={makeActionsStyles(columnsDefinition.length - 1)}>
