@@ -90,6 +90,9 @@ export const Form = () => {
         }
       } catch (error) {
         console.error(error);
+        if (categoryHttp.isCanceledRequest(error)) {
+          return;
+        }
         enqueueSnackbar("Não foi possivel carregar as informações", {
           variant: "error",
         });
@@ -130,13 +133,6 @@ export const Form = () => {
   };
 
   const [categories, setCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    categoryHttp.list().then((response) => {
-      setCategories(response.data.data);
-    });
-    return () => {};
-  }, []);
 
   return (
     <DefaultForm
