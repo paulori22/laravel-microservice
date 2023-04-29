@@ -16,3 +16,5 @@ yarn-error.log
 .history/
 .devcontainer/
 _ide_helper*
+public/admin-frontend/
+resources/views/admin-frontend
