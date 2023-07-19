@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\CastMember;
 use App\Models\Category;
-use App\Observers\CategoryObserver;
+use App\Models\Genre;
+use App\Observers\SyncModelObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         \View::addExtension('html', 'blade');
-        Category::observe(CategoryObserver::class);
+        Category::observe(SyncModelObserver::class);
+        Genre::observe(SyncModelObserver::class);
+        CastMember::observe(SyncModelObserver::class);
     }
 }
