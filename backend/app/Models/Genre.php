@@ -8,10 +8,11 @@ use App\Models\Traits\Uuid;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Chelout\RelationshipEvents\Concerns\HasBelongsToManyEvents;
 
 class Genre extends Model
 {
-    use SoftDeletes, Uuid, Filterable, SerializeDateToIso8601;
+    use SoftDeletes, Uuid, Filterable, SerializeDateToIso8601, HasBelongsToManyEvents;
 
     protected $fillable = ['name', 'is_active'];
     protected $dates = ['deleted_at'];
@@ -21,6 +22,9 @@ class Genre extends Model
     ];
     public $incrementing = false;
     protected $keyType = "string";
+    protected $observables = [
+        "belongsToManyAttached"
+    ];
 
     public function categories()
     {

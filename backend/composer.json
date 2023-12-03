@@ -10,6 +10,7 @@
     "require": {
         "php": "^7.2",
         "bschmitt/laravel-amqp": "^2.1",
+        "chelout/laravel-relationship-events": "^1.5",
         "fideloper/proxy": "^4.0",
         "fruitcake/laravel-cors": "^2.2",
         "laravel/framework": "~6.18",
