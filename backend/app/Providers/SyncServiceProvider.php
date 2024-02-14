@@ -27,7 +27,7 @@ class SyncServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (env('SYNC_RABBITMQ_ENABLED') !== false) {
+        if (env('SYNC_RABBITMQ_ENABLED') !== true) {
             return;
         }
         Category::observe(SyncModelObserver::class);
